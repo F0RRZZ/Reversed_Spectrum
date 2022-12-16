@@ -41,10 +41,10 @@ class Hero(pygame.sprite.Sprite):
         self.attacking = False
         self.walking = False
 
-    def get_postion(self):
+    def get_position(self):
         return self.rect.x, self.rect.y
 
-    def set_postion(self, position: tuple):
+    def set_position(self, position: tuple):
         self.rect.x, self.rect.y = position
 
     def update_image(self):
@@ -84,22 +84,22 @@ class Hero(pygame.sprite.Sprite):
 
     def update_position(self):
         if not self.attacking:
-            position = self.get_postion()
+            position = self.get_position()
             self.walking = any(pygame.key.get_pressed())
             if pygame.key.get_pressed()[pygame.K_d]:
-                self.set_postion((position[0] + 10, position[1]))
+                self.set_position((position[0] + 10, position[1]))
                 self.direction = 'right'
                 if self.image not in Hero.right_walking_hero_images:
                     self.image = Hero.right_walking_hero_images[0]
             if pygame.key.get_pressed()[pygame.K_a]:
-                self.set_postion((position[0] - 10, position[1]))
+                self.set_position((position[0] - 10, position[1]))
                 self.direction = 'left'
                 if self.image not in Hero.left_walking_hero_images:
                     self.image = Hero.left_standing_hero_images[0]
             if pygame.key.get_pressed()[pygame.K_w]:
-                self.set_postion((position[0], position[1] - 10))
+                self.set_position((position[0], position[1] - 10))
             if pygame.key.get_pressed()[pygame.K_s]:
-                self.set_postion((position[0], position[1] + 10))
+                self.set_position((position[0], position[1] + 10))
 
     def attack(self):
         self.attacking = True
