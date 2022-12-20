@@ -1,43 +1,13 @@
 import pygame
 
 from image_loader import load_image
+from settings import TILE_IMAGES
 
 
-class GrassTexture(pygame.sprite.Sprite):
-    image = pygame.transform.scale(load_image("grass.png"), (100, 100))
-
-    def __init__(self, group, position: tuple):
+class Tile(pygame.sprite.Sprite):
+    def __init__(self, group, tile_type: str, pos_x: int, pos_y: int):
         super().__init__(group)
-        self.image = GrassTexture.image
+        self.image = pygame.transform.scale(TILE_IMAGES[tile_type], (100, 100))
         self.rect = self.image.get_rect()
-        self.rect.x, self.rect.y = position
-
-
-class StoneTexture(pygame.sprite.Sprite):
-    image = pygame.transform.scale(load_image("stone.png"), (100, 100))
-
-    def __init__(self, group, position: tuple):
-        super().__init__(group)
-        self.image = StoneTexture.image
-        self.rect = self.image.get_rect()
-        self.rect.x, self.rect.y = position
-
-
-class LargeHellStoneTexture(pygame.sprite.Sprite):
-    image = pygame.transform.scale(load_image("hell_stone2.png"), (100, 100))
-
-    def __init__(self, group, position: tuple):
-        super().__init__(group)
-        self.image = LargeHellStoneTexture.image
-        self.rect = self.image.get_rect()
-        self.rect.x, self.rect.y = position
-
-
-class SmallHellStoneTexture(pygame.sprite.Sprite):
-    image = pygame.transform.scale(load_image("hell_stone3.png"), (100, 100))
-
-    def __init__(self, group, position: tuple):
-        super().__init__(group)
-        self.image = SmallHellStoneTexture.image
-        self.rect = self.image.get_rect()
-        self.rect.x, self.rect.y = position
+        self.rect.x, self.rect.y = pos_x, pos_y
+        self.type = tile_type

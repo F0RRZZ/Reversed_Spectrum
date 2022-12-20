@@ -3,8 +3,8 @@ import random
 import pygame
 
 from settings import *
-from textures import *
 from characters import *
+from textures import Tile
 
 
 def main():
@@ -18,9 +18,9 @@ def main():
         for x in range(20):
             num = random.randint(0, 1)
             if num:
-                LargeHellStoneTexture(map_textures, (100 * x, 100 * y))
+                Tile(map_textures, "large hell stone", 100 * x, 100 * y)
             else:
-                SmallHellStoneTexture(map_textures, (100 * x, 100 * y))
+                Tile(map_textures, "small hell stone", 100 * x, 100 * y)
     hero = Hero(hero_group, (500, 500))
     alchemist = Alchemist(alchemists, (250, 250))
 
@@ -28,7 +28,7 @@ def main():
 
     running = True
     while running:
-        screen.fill(pygame.Color("grey"))
+        screen.fill(pygame.Color("black"))
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
