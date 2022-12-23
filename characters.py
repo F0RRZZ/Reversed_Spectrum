@@ -95,7 +95,7 @@ class Hero(pygame.sprite.Sprite):
             elif keys[pygame.K_w] and keys[pygame.K_a]:
                 self.set_position((position[0] - 10, position[1] - 10))
                 self.direction = 'left'
-                if self.image not in Hero.right_walking_hero_images:
+                if self.image not in Hero.left_walking_hero_images:
                     self.image = Hero.left_walking_hero_images[0]
             elif keys[pygame.K_s] and keys[pygame.K_d]:
                 self.set_position((position[0] + 10, position[1] + 10))
@@ -105,7 +105,7 @@ class Hero(pygame.sprite.Sprite):
             elif keys[pygame.K_s] and keys[pygame.K_a]:
                 self.set_position((position[0] - 10, position[1] + 10))
                 self.direction = 'left'
-                if self.image not in Hero.right_walking_hero_images:
+                if self.image not in Hero.left_walking_hero_images:
                     self.image = Hero.left_walking_hero_images[0]
             elif keys[pygame.K_d]:
                 self.set_position((position[0] + 10, position[1]))
