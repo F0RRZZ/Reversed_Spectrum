@@ -23,8 +23,8 @@ class Game:
                     Tile("large hell stone", 100 * x, 100 * y, self.tiles, self.all_sprites)
                 else:
                     Tile("small hell stone", 100 * x, 100 * y, self.tiles, self.all_sprites)
-        self.hero = Hero((500, 500), self.hero_sprite, self.all_sprites)
         Alchemist((250, 250), self.alchemists, self.all_sprites)
+        self.hero = Hero((500, 500), self.hero_sprite, self.all_sprites)
 
     def draw_sprites(self, screen: pygame.Surface):
         """Drawing all tiles"""

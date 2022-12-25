@@ -1,7 +1,7 @@
 import pygame
+import random
 
 from settings import *
-from image_loader import load_image
 
 
 class Hero(pygame.sprite.Sprite):
@@ -19,7 +19,8 @@ class Hero(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = position
 
-        pygame.time.set_timer(HERO_EVENT_TYPE, 200)
+        pygame.time.set_timer(HERO_IMAGE_UPDATE_EVENT_TYPE, 200)
+        pygame.time.set_timer(HERO_STEP_SOUND_EVENT_TYPE, 500)
 
         self.name = "Hero"
         self.inventory = 'inventory'
@@ -66,7 +67,7 @@ class Hero(pygame.sprite.Sprite):
                 self.standing_hero_animation()
             else:
                 self.walking_hero_animation()
-            pygame.time.set_timer(HERO_EVENT_TYPE, 200)
+            pygame.time.set_timer(HERO_IMAGE_UPDATE_EVENT_TYPE, 200)
         else:
             self.attacking_hero_animation()
 
@@ -106,19 +107,19 @@ class Hero(pygame.sprite.Sprite):
             elif keys[pygame.K_s]:
                 self.set_position((position[0], position[1] + 10))
 
-    def attack_animation(self):
+    def attack(self):
         """Animating the heros attack"""
         self.attacking = True
+        HERO_SOUNDS[f"attack{random.randint(1, 2)}"].play()
         if self.direction == 'right':
             self.image = Hero.right_attacking_hero_images[0]
         elif self.direction == 'left':
             self.image = Hero.left_attacking_hero_images[0]
-        pygame.time.set_timer(HERO_EVENT_TYPE, 80)
+        pygame.time.set_timer(HERO_IMAGE_UPDATE_EVENT_TYPE, 80)
 
 
 class Alchemist(pygame.sprite.Sprite):
-    images = [pygame.transform.scale(load_image("alchemist.png"), (100, 100)),
-              pygame.transform.scale(load_image("alchemist2.png"), (100, 100))]
+    images = ALCHEMIST_IMAGES['right']
 
     def __init__(self, position: tuple, *groups):
         super().__init__(*groups)
