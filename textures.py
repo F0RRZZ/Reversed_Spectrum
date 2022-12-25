@@ -1,6 +1,5 @@
 import pygame
 
-from image_loader import load_image
 from settings import TILE_IMAGES, TILE_SIZE
 
 
