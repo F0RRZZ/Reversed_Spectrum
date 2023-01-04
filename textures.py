@@ -10,3 +10,4 @@ class Tile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = pos_x, pos_y
         self.type = tile_type
+        self.tile_type = tile_type
