@@ -29,14 +29,21 @@ class Game:
                     tile = Tile("small hell stone", 100 * x, 100 * y, self.tiles, self.all_sprites)
                 temp.append(tile)
             self.tiles_arr.append(temp)
-        ElectroEnemy((500, 250), self.enemies, self.electro_enemies, self.all_sprites)
-        Alchemist((250, 250), self.alchemists, self.all_sprites)
         self.hero = Hero((500, 500), self.hero_sprite, self.all_sprites)
+        ElectroEnemy((500, 250), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+        ElectroEnemy((1000, 1000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+        Alchemist((250, 250), self.alchemists, self.all_sprites)
         self.is_paused = False
 
     def draw_sprites(self, screen: pygame.Surface) -> None:
         """Drawing all tiles"""
         self.all_sprites.draw(screen)
+
+    def hero_attack(self):
+        for enemy in self.enemies:
+            if self.hero.rect.colliderect(enemy.rect):
+                self.hero.hit(enemy)
+        self.hero.attack()
 
     def update_alchemists_images(self) -> None:
         """Updating the alchemists picture"""
@@ -88,17 +95,23 @@ class Game:
         return start
 
     def move_enemies(self) -> None:
-        if not self.is_paused:
-            for enemy in self.enemies:
-                if self.is_hero_in_sight(enemy.get_position(), self.hero.get_position()):
-                    next_position = self.find_path_step(enemy.get_position(), self.hero.get_position())
-                    enemy.set_position(next_position)
-                    enemy.is_running = True
-                else:
-                    enemy.is_running = False
-
-    def can_enemy_attack(self, obj) -> bool:
-        pass
+        try:
+            if not self.is_paused:
+                for enemy in self.enemies:
+                    if self.is_hero_in_sight(enemy.get_position(), self.hero.get_position()) and\
+                            not enemy.is_attacking and not enemy.is_damaged:
+                        next_position = self.find_path_step(enemy.get_position(), self.hero.get_position())
+                        enemy.set_position(next_position)
+                        if enemy.rect.colliderect(self.hero.rect):
+                            enemy.attack()
+                            enemy.is_running = False
+                        else:
+                            enemy.is_running = True
+                    else:
+                        enemy.is_running = False
+                        enemy.is_standing = True
+        except Exception:
+            print("Неизвестная ошибка")
 
     def update_enemies(self) -> None:
         pass

@@ -5,12 +5,13 @@ from settings import *
 from characters import *
 from errors import CoordinateError
 from game import Game
+from typing import Tuple
 
 
 pygame.mixer.pre_init(44100, -16, 1, 512)
 pygame.init()
 pygame.display.set_caption("Reversed Spectrum")
-screen = pygame.display.set_mode((1900, 1000), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((1900, 1000))
 clock = pygame.time.Clock()
 pygame.mouse.set_visible(False)
 
@@ -79,7 +80,7 @@ def menu():
                         start_button[1][1]:
                     MENU_SOUNDS["hover"].play()
                     pygame.mixer.music.stop()
-                    return
+                    main()
                 elif quit_button[0][0] <= event.pos[0] <= quit_button[1][0] and quit_button[0][1] <= event.pos[1] <= \
                         quit_button[1][1]:
                     terminate()
@@ -112,12 +113,13 @@ def pause(screen: pygame.Surface, game: Game):
                     return
                 elif exit_btn[0][0] <= event.pos[0] <= exit_btn[1][0] and exit_btn[0][1] <= event.pos[1] <= \
                         exit_btn[1][1]:
+                    game.is_paused = False
                     menu()
         cursor_sprite_group.draw(screen)
         pygame.display.flip()
 
 
-def draw_stats_bar(screen: pygame.Surface, health: int, mana: int):
+def draw_stats_bar(screen: pygame.Surface, health: int, mana: int) -> None:
     stats_group = pygame.sprite.Group()
     hurt = create_sprite("hurt.png", (50, 50), (10, 10))
     flask = create_sprite("mana.png", (60, 60), (5, 80))
@@ -131,7 +133,6 @@ def draw_stats_bar(screen: pygame.Surface, health: int, mana: int):
 
 
 def main():
-    menu()
     game = Game()
 
     running = True
@@ -145,7 +146,7 @@ def main():
                     game.is_paused = not game.is_paused
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if not game.hero.is_attacking and not game.is_paused:
-                    game.hero.attack()
+                    game.hero_attack()
             if event.type == ALCHEMIST_EVENT_TYPE:
                 game.update_alchemists_images()
             if event.type == HERO_IMAGE_UPDATE_EVENT_TYPE:
@@ -165,8 +166,8 @@ def main():
         pygame.display.flip()
         clock.tick(FPS)
 
-    pygame.quit()
+    terminate()
 
 
 if __name__ == "__main__":
-    main()
+    menu()

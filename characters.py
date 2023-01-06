@@ -25,9 +25,11 @@ class Hero(pygame.sprite.Sprite):
 
         self.name = "Hero"
         self.inventory = 'inventory'
-        self.direction = 'right'
+        self.damage = 20
         self.health = 100
         self.mana = 100
+
+        self.direction = 'right'
         self.is_attacking = False
         self.is_walking = False
 
@@ -36,6 +38,13 @@ class Hero(pygame.sprite.Sprite):
 
     def set_position(self, position: Tuple[int, int]):
         self.rect.x, self.rect.y = position
+
+    @staticmethod
+    def play_attack_sound() -> None:
+        HERO_SOUNDS[f"attack{random.randint(1, 2)}"].play()
+
+    def hit(self, target) -> None:
+        target.get_damage(self.damage)
 
     def standing_animation(self) -> None:
         """Updating the picture if the hero stands"""
@@ -122,9 +131,8 @@ class Hero(pygame.sprite.Sprite):
             self.image = Hero.left_attacking_hero_images[0]
         pygame.time.set_timer(HERO_IMAGE_UPDATE_EVENT_TYPE, 80)
 
-    @staticmethod
-    def play_attack_sound() -> None:
-        HERO_SOUNDS[f"attack{random.randint(1, 2)}"].play()
+    def get_damage(self, damage: int) -> None:
+        self.health -= damage
 
 
 class Alchemist(pygame.sprite.Sprite):
@@ -148,18 +156,31 @@ class Alchemist(pygame.sprite.Sprite):
 
 class ElectroEnemy(pygame.sprite.Sprite):
     images_standing_right = ELECTRO_ENEMY_IMAGES["right_standing"]
-    images_standing_left =[pygame.transform.flip(i, True, False) for i in images_standing_right]
+    images_standing_left = [pygame.transform.flip(i, True, False) for i in images_standing_right]
     images_running_right = ELECTRO_ENEMY_IMAGES["right_running"]
     images_running_left = [pygame.transform.flip(i, True, False) for i in images_running_right]
+    images_attacking_right = ELECTRO_ENEMY_IMAGES["right_attacking"]
+    images_attacking_left = [pygame.transform.flip(i, True, False) for i in images_attacking_right]
+    images_damaged_right = ELECTRO_ENEMY_IMAGES["right_damaged"]
+    images_damaged_left = [pygame.transform.flip(i, True, False) for i in images_damaged_right]
+    images_died_right = ELECTRO_ENEMY_IMAGES["right_die"]
+    images_died_left = [pygame.transform.flip(i, True, False) for i in images_died_right]
 
-    def __init__(self, position: Tuple[int, int], *groups):
+    def __init__(self, position: Tuple[int, int], target: Hero, *groups):
         super().__init__(*groups)
 
         self.image = ElectroEnemy.images_standing_right[0]
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = position
+        self.damage = 5
+        self.health = 50
         self.direction = 'left'
         self.is_running = False
+        self.is_attacking = False
+        self.is_damaged = False
+        self.is_died = False
+
+        self.target = target
 
         pygame.time.set_timer(ELECTRO_ENEMY_EVENT_TYPE, 120)
         pygame.time.set_timer(ELECTRO_ENEMY_MOVE_EVENT_TYPE, 100)
@@ -170,6 +191,17 @@ class ElectroEnemy(pygame.sprite.Sprite):
     def set_position(self, position: Tuple[int, int]) -> None:
         self.direction = 'left' if self.rect.x > position[0] else 'right'
         self.rect.x, self.rect.y = position
+
+    def hit(self, hero: Hero) -> None:
+        hero.get_damage(self.damage)
+
+    def get_damage(self, damage: int) -> None:
+        self.is_damaged = True
+        self.health -= damage
+        self.image = {'left': ElectroEnemy.images_damaged_left,
+                      'right': ElectroEnemy.images_damaged_right}.get(self.direction)[0]
+        if self.health <= 0:
+            self.is_died = True
 
     def standing_animation(self) -> None:
         images = {'left': ElectroEnemy.images_standing_left, 'right': ElectroEnemy.images_standing_right}
@@ -189,10 +221,56 @@ class ElectroEnemy(pygame.sprite.Sprite):
             self.image = images[self.direction][0]
 
     def attacking_animation(self) -> None:
-        pass
+        images = {'left': ElectroEnemy.images_attacking_left, 'right': ElectroEnemy.images_attacking_right}
+        image_index = 0
+        try:
+            image_index = images[self.direction].index(self.image)
+            self.image = images[self.direction][image_index + 1]
+        except ValueError:
+            self.image = images[self.direction][0]
+        if image_index == 9:
+            self.is_attacking = False
+            if self.rect.colliderect(self.target.rect):
+                self.hit(self.target)
+
+    def damaged_animation(self) -> None:
+        images = {'left': ElectroEnemy.images_damaged_left, 'right': ElectroEnemy.images_damaged_right}
+        image_index = images[self.direction].index(self.image) + 1
+        self.image = images[self.direction][image_index]
+        if image_index == 4:
+            self.is_damaged = False
+
+    def die_animation(self) -> None:
+        images = {'left': ElectroEnemy.images_died_left, 'right': ElectroEnemy.images_died_left}
+        try:
+            image_index = images[self.direction].index(self.image) + 1
+            self.image = images[self.direction][image_index]
+            if image_index == 15:
+                self.kill()
+        except ValueError:
+            self.image = images[self.direction][0]
+
+    def attack(self) -> None:
+        """Switches hero mode to attack"""
+        self.is_attacking = True
+        if self.direction == 'right':
+            self.image = ElectroEnemy.images_attacking_right[0]
+        elif self.direction == 'left':
+            self.image = ElectroEnemy.images_attacking_left[0]
 
     def update_image(self) -> None:
-        if self.is_running:
-            self.running_animation()
+        if not self.is_died:
+            if not self.is_damaged:
+                if not self.is_attacking and not self.is_damaged:
+                    if not self.is_running:
+                        self.standing_animation()
+                    else:
+                        self.running_animation()
+                    pygame.time.set_timer(ELECTRO_ENEMY_EVENT_TYPE, 120)
+                else:
+                    self.attacking_animation()
+                    pygame.time.set_timer(ELECTRO_ENEMY_EVENT_TYPE, 75)
+            else:
+                self.damaged_animation()
         else:
-            self.standing_animation()
+            self.die_animation()
