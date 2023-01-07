@@ -1,12 +1,12 @@
 import pygame
-
-from settings import TILE_IMAGES, TILE_SIZE
+import settings
+import typing
 
 
 class Tile(pygame.sprite.Sprite):
-    def __init__(self, tile_type: str, pos_x: int, pos_y: int, *groups):
+    def __init__(self, tile_type: str, pos_x: int, pos_y: int, scale: typing.Tuple[int, int],  *groups):
         super().__init__(*groups)
-        self.image = pygame.transform.scale(TILE_IMAGES[tile_type], TILE_SIZE)
+        self.image = pygame.transform.scale(settings.TILE_IMAGES[tile_type], scale)
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = pos_x, pos_y
         self.type = tile_type

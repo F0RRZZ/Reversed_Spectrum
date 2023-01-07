@@ -1,27 +1,26 @@
 import pygame
 import random
-
-from settings import *
-from typing import Tuple
+import settings
+import typing
 
 
 class Hero(pygame.sprite.Sprite):
-    right_standing_hero_images = HERO_IMAGES["right_standing"]
+    right_standing_hero_images = settings.HERO_IMAGES["right_standing"]
     left_standing_hero_images = [pygame.transform.flip(i, True, False) for i in right_standing_hero_images]
-    right_attacking_hero_images = HERO_IMAGES["right_attacking"]
+    right_attacking_hero_images = settings.HERO_IMAGES["right_attacking"]
     left_attacking_hero_images = [pygame.transform.flip(i, True, False) for i in right_attacking_hero_images]
-    right_walking_hero_images = HERO_IMAGES["right_walking"]
+    right_walking_hero_images = settings.HERO_IMAGES["right_walking"]
     left_walking_hero_images = [pygame.transform.flip(i, True, False) for i in right_walking_hero_images]
 
-    def __init__(self, position: Tuple[int, int], *groups):
+    def __init__(self, position: typing.Tuple[int, int], *groups):
         super().__init__(*groups)
 
         self.image = Hero.right_standing_hero_images[0]
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = position
 
-        pygame.time.set_timer(HERO_IMAGE_UPDATE_EVENT_TYPE, 200)  # timer for updating heros image
-        pygame.time.set_timer(HERO_STEP_SOUND_EVENT_TYPE, 500)  # timer for turning on the sound of footsteps
+        pygame.time.set_timer(settings.HERO_IMAGE_UPDATE_EVENT_TYPE, 200)  # timer for updating heros image
+        pygame.time.set_timer(settings.HERO_STEP_SOUND_EVENT_TYPE, 500)  # timer for turning on the sound of footsteps
 
         self.name = "Hero"
         self.inventory = 'inventory'
@@ -33,15 +32,15 @@ class Hero(pygame.sprite.Sprite):
         self.is_attacking = False
         self.is_walking = False
 
-    def get_position(self) -> Tuple[int, int]:
+    def get_position(self) -> typing.Tuple[int, int]:
         return self.rect.x, self.rect.y
 
-    def set_position(self, position: Tuple[int, int]):
+    def set_position(self, position: typing.Tuple[int, int]):
         self.rect.x, self.rect.y = position
 
     @staticmethod
     def play_attack_sound() -> None:
-        HERO_SOUNDS[f"attack{random.randint(1, 2)}"].play()
+        settings.HERO_SOUNDS[f"attack{random.randint(1, 2)}"].play()
 
     def hit(self, target) -> None:
         target.get_damage(self.damage)
@@ -81,7 +80,7 @@ class Hero(pygame.sprite.Sprite):
                 self.standing_animation()
             else:
                 self.walking_animation()
-            pygame.time.set_timer(HERO_IMAGE_UPDATE_EVENT_TYPE, 200)
+            pygame.time.set_timer(settings.HERO_IMAGE_UPDATE_EVENT_TYPE, 200)
         else:
             self.attacking_animation()
 
@@ -105,21 +104,21 @@ class Hero(pygame.sprite.Sprite):
                 self.change_direction('right')
 
             if keys[pygame.K_w] and keys[pygame.K_d]:
-                self.set_position((position[0] + HERO_MOVE_SPEED, position[1] - HERO_MOVE_SPEED))
+                self.set_position((position[0] + settings.HERO_MOVE_SPEED, position[1] - settings.HERO_MOVE_SPEED))
             elif keys[pygame.K_w] and keys[pygame.K_a]:
-                self.set_position((position[0] - HERO_MOVE_SPEED, position[1] - HERO_MOVE_SPEED))
+                self.set_position((position[0] - settings.HERO_MOVE_SPEED, position[1] - settings.HERO_MOVE_SPEED))
             elif keys[pygame.K_s] and keys[pygame.K_d]:
-                self.set_position((position[0] + HERO_MOVE_SPEED, position[1] + HERO_MOVE_SPEED))
+                self.set_position((position[0] + settings.HERO_MOVE_SPEED, position[1] + settings.HERO_MOVE_SPEED))
             elif keys[pygame.K_s] and keys[pygame.K_a]:
-                self.set_position((position[0] - HERO_MOVE_SPEED, position[1] + HERO_MOVE_SPEED))
+                self.set_position((position[0] - settings.HERO_MOVE_SPEED, position[1] + settings.HERO_MOVE_SPEED))
             elif keys[pygame.K_d]:
-                self.set_position((position[0] + HERO_MOVE_SPEED, position[1]))
+                self.set_position((position[0] + settings.HERO_MOVE_SPEED, position[1]))
             elif keys[pygame.K_a]:
-                self.set_position((position[0] - HERO_MOVE_SPEED, position[1]))
+                self.set_position((position[0] - settings.HERO_MOVE_SPEED, position[1]))
             elif keys[pygame.K_w]:
-                self.set_position((position[0], position[1] - HERO_MOVE_SPEED))
+                self.set_position((position[0], position[1] - settings.HERO_MOVE_SPEED))
             elif keys[pygame.K_s]:
-                self.set_position((position[0], position[1] + HERO_MOVE_SPEED))
+                self.set_position((position[0], position[1] + settings.HERO_MOVE_SPEED))
 
     def attack(self) -> None:
         """Switches hero mode to attack"""
@@ -129,14 +128,14 @@ class Hero(pygame.sprite.Sprite):
             self.image = Hero.right_attacking_hero_images[0]
         elif self.direction == 'left':
             self.image = Hero.left_attacking_hero_images[0]
-        pygame.time.set_timer(HERO_IMAGE_UPDATE_EVENT_TYPE, 80)
+        pygame.time.set_timer(settings.HERO_IMAGE_UPDATE_EVENT_TYPE, 80)
 
     def get_damage(self, damage: int) -> None:
         self.health -= damage
 
 
 class Alchemist(pygame.sprite.Sprite):
-    images = ALCHEMIST_IMAGES['right']
+    images = settings.ALCHEMIST_IMAGES['right']
 
     def __init__(self, position: tuple, *groups):
         super().__init__(*groups)
@@ -145,7 +144,7 @@ class Alchemist(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = position
 
-        pygame.time.set_timer(ALCHEMIST_EVENT_TYPE, 700)
+        pygame.time.set_timer(settings.ALCHEMIST_EVENT_TYPE, 700)
 
         self.name = 'Alchemist'
         self.skills = 'High'
@@ -155,18 +154,18 @@ class Alchemist(pygame.sprite.Sprite):
 
 
 class ElectroEnemy(pygame.sprite.Sprite):
-    images_standing_right = ELECTRO_ENEMY_IMAGES["right_standing"]
+    images_standing_right = settings.ELECTRO_ENEMY_IMAGES["right_standing"]
     images_standing_left = [pygame.transform.flip(i, True, False) for i in images_standing_right]
-    images_running_right = ELECTRO_ENEMY_IMAGES["right_running"]
+    images_running_right = settings.ELECTRO_ENEMY_IMAGES["right_running"]
     images_running_left = [pygame.transform.flip(i, True, False) for i in images_running_right]
-    images_attacking_right = ELECTRO_ENEMY_IMAGES["right_attacking"]
+    images_attacking_right = settings.ELECTRO_ENEMY_IMAGES["right_attacking"]
     images_attacking_left = [pygame.transform.flip(i, True, False) for i in images_attacking_right]
-    images_damaged_right = ELECTRO_ENEMY_IMAGES["right_damaged"]
+    images_damaged_right = settings.ELECTRO_ENEMY_IMAGES["right_damaged"]
     images_damaged_left = [pygame.transform.flip(i, True, False) for i in images_damaged_right]
-    images_died_right = ELECTRO_ENEMY_IMAGES["right_die"]
+    images_died_right = settings.ELECTRO_ENEMY_IMAGES["right_die"]
     images_died_left = [pygame.transform.flip(i, True, False) for i in images_died_right]
 
-    def __init__(self, position: Tuple[int, int], target: Hero, *groups):
+    def __init__(self, position: typing.Tuple[int, int], target: Hero, *groups):
         super().__init__(*groups)
 
         self.image = ElectroEnemy.images_standing_right[0]
@@ -182,13 +181,13 @@ class ElectroEnemy(pygame.sprite.Sprite):
 
         self.target = target
 
-        pygame.time.set_timer(ELECTRO_ENEMY_EVENT_TYPE, 120)
-        pygame.time.set_timer(ELECTRO_ENEMY_MOVE_EVENT_TYPE, 100)
+        pygame.time.set_timer(settings.ELECTRO_ENEMY_EVENT_TYPE, 120)
+        pygame.time.set_timer(settings.ELECTRO_ENEMY_MOVE_EVENT_TYPE, 100)
 
-    def get_position(self) -> Tuple[int, int]:
+    def get_position(self) -> typing.Tuple[int, int]:
         return self.rect.x, self.rect.y
 
-    def set_position(self, position: Tuple[int, int]) -> None:
+    def set_position(self, position: typing.Tuple[int, int]) -> None:
         self.direction = 'left' if self.rect.x > position[0] else 'right'
         self.rect.x, self.rect.y = position
 
@@ -196,12 +195,13 @@ class ElectroEnemy(pygame.sprite.Sprite):
         hero.get_damage(self.damage)
 
     def get_damage(self, damage: int) -> None:
-        self.is_damaged = True
-        self.health -= damage
-        self.image = {'left': ElectroEnemy.images_damaged_left,
-                      'right': ElectroEnemy.images_damaged_right}.get(self.direction)[0]
-        if self.health <= 0:
-            self.is_died = True
+        if not self.is_died:
+            self.is_damaged = True
+            self.health -= damage
+            self.image = {'left': ElectroEnemy.images_damaged_left,
+                          'right': ElectroEnemy.images_damaged_right}.get(self.direction)[0]
+            if self.health <= 0:
+                self.is_died = True
 
     def standing_animation(self) -> None:
         images = {'left': ElectroEnemy.images_standing_left, 'right': ElectroEnemy.images_standing_right}
@@ -266,10 +266,10 @@ class ElectroEnemy(pygame.sprite.Sprite):
                         self.standing_animation()
                     else:
                         self.running_animation()
-                    pygame.time.set_timer(ELECTRO_ENEMY_EVENT_TYPE, 120)
+                    pygame.time.set_timer(settings.ELECTRO_ENEMY_EVENT_TYPE, 120)
                 else:
                     self.attacking_animation()
-                    pygame.time.set_timer(ELECTRO_ENEMY_EVENT_TYPE, 75)
+                    pygame.time.set_timer(settings.ELECTRO_ENEMY_EVENT_TYPE, 75)
             else:
                 self.damaged_animation()
         else:
