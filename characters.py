@@ -153,26 +153,13 @@ class Alchemist(pygame.sprite.Sprite):
         self.image = Alchemist.images[Alchemist.images.index(self.image) - 1]
 
 
-class ElectroEnemy(pygame.sprite.Sprite):
-    images_standing_right = settings.ELECTRO_ENEMY_IMAGES["right_standing"]
-    images_standing_left = [pygame.transform.flip(i, True, False) for i in images_standing_right]
-    images_running_right = settings.ELECTRO_ENEMY_IMAGES["right_running"]
-    images_running_left = [pygame.transform.flip(i, True, False) for i in images_running_right]
-    images_attacking_right = settings.ELECTRO_ENEMY_IMAGES["right_attacking"]
-    images_attacking_left = [pygame.transform.flip(i, True, False) for i in images_attacking_right]
-    images_damaged_right = settings.ELECTRO_ENEMY_IMAGES["right_damaged"]
-    images_damaged_left = [pygame.transform.flip(i, True, False) for i in images_damaged_right]
-    images_died_right = settings.ELECTRO_ENEMY_IMAGES["right_die"]
-    images_died_left = [pygame.transform.flip(i, True, False) for i in images_died_right]
-
+class Enemy(pygame.sprite.Sprite):
     def __init__(self, position: typing.Tuple[int, int], target: Hero, *groups):
         super().__init__(*groups)
 
-        self.image = ElectroEnemy.images_standing_right[0]
+        self.image = self.images_standing_right[0]
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = position
-        self.damage = 5
-        self.health = 50
         self.direction = 'left'
         self.is_running = False
         self.is_attacking = False
@@ -198,30 +185,30 @@ class ElectroEnemy(pygame.sprite.Sprite):
         if not self.is_died:
             self.is_damaged = True
             self.health -= damage
-            self.image = {'left': ElectroEnemy.images_damaged_left,
-                          'right': ElectroEnemy.images_damaged_right}.get(self.direction)[0]
+            self.image = {'left': self.images_damaged_left,
+                          'right': self.images_damaged_right}.get(self.direction)[0]
             if self.health <= 0:
                 self.is_died = True
 
     def standing_animation(self) -> None:
-        images = {'left': ElectroEnemy.images_standing_left, 'right': ElectroEnemy.images_standing_right}
+        images = {'left': self.images_standing_left, 'right': self.images_standing_right}
         try:
-            image_index = (images[self.direction].index(self.image) + 1) % 8
+            image_index = (images[self.direction].index(self.image) + 1) % len(images['left'])
             self.image = images[self.direction][image_index]
         except ValueError:
             # if current image not in the list with enemy standing images
             self.image = images[self.direction][0]
 
     def running_animation(self) -> None:
-        images = {'left': ElectroEnemy.images_running_left, 'right': ElectroEnemy.images_running_right}
+        images = {'left': self.images_running_left, 'right': self.images_running_right}
         try:
-            image_index = (images[self.direction].index(self.image) + 1) % 6
+            image_index = (images[self.direction].index(self.image) + 1) % len(images['left'])
             self.image = images[self.direction][image_index]
         except ValueError:
             self.image = images[self.direction][0]
 
     def attacking_animation(self) -> None:
-        images = {'left': ElectroEnemy.images_attacking_left, 'right': ElectroEnemy.images_attacking_right}
+        images = {'left': self.images_attacking_left, 'right': self.images_attacking_right}
         image_index = 0
         try:
             image_index = images[self.direction].index(self.image)
@@ -234,14 +221,14 @@ class ElectroEnemy(pygame.sprite.Sprite):
                 self.hit(self.target)
 
     def damaged_animation(self) -> None:
-        images = {'left': ElectroEnemy.images_damaged_left, 'right': ElectroEnemy.images_damaged_right}
+        images = {'left': self.images_damaged_left, 'right': self.images_damaged_right}
         image_index = images[self.direction].index(self.image) + 1
         self.image = images[self.direction][image_index]
         if image_index == 4:
             self.is_damaged = False
 
     def die_animation(self) -> None:
-        images = {'left': ElectroEnemy.images_died_left, 'right': ElectroEnemy.images_died_left}
+        images = {'left': self.images_died_left, 'right': self.images_died_left}
         try:
             image_index = images[self.direction].index(self.image) + 1
             self.image = images[self.direction][image_index]
@@ -274,3 +261,22 @@ class ElectroEnemy(pygame.sprite.Sprite):
                 self.damaged_animation()
         else:
             self.die_animation()
+
+
+class ElectroEnemy(Enemy):
+    images_standing_right = settings.ELECTRO_ENEMY_IMAGES["right_standing"]
+    images_standing_left = [pygame.transform.flip(i, True, False) for i in images_standing_right]
+    images_running_right = settings.ELECTRO_ENEMY_IMAGES["right_running"]
+    images_running_left = [pygame.transform.flip(i, True, False) for i in images_running_right]
+    images_attacking_right = settings.ELECTRO_ENEMY_IMAGES["right_attacking"]
+    images_attacking_left = [pygame.transform.flip(i, True, False) for i in images_attacking_right]
+    images_damaged_right = settings.ELECTRO_ENEMY_IMAGES["right_damaged"]
+    images_damaged_left = [pygame.transform.flip(i, True, False) for i in images_damaged_right]
+    images_died_right = settings.ELECTRO_ENEMY_IMAGES["right_die"]
+    images_died_left = [pygame.transform.flip(i, True, False) for i in images_died_right]
+
+    def __init__(self, position: typing.Tuple[int, int], target: Hero, *groups):
+        super().__init__(position, target, *groups)
+
+        self.damage = 5
+        self.health = 50
