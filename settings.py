@@ -50,6 +50,10 @@ HERO_IMAGES = {
                         pygame.transform.scale(loaders.load_image("attacking_hero3.png"), (150, 150)),
                         pygame.transform.scale(loaders.load_image("attacking_hero4.png"), (150, 150)),
                         pygame.transform.scale(loaders.load_image("attacking_hero5.png"), (150, 150))],
+    "right_damaged": [pygame.transform.scale(loaders.load_image("damaged_hero1.png"), (150, 150)),
+                      pygame.transform.scale(loaders.load_image("damaged_hero2.png"), (150, 150)),
+                      pygame.transform.scale(loaders.load_image("damaged_hero3.png"), (150, 150)),
+                      pygame.transform.scale(loaders.load_image("damaged_hero1.png"), (150, 150))]
 }
 
 ELECTRO_ENEMY_IMAGES = {
