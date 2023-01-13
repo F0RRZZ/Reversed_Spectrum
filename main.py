@@ -104,6 +104,8 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     game_obj.is_paused = not game_obj.is_paused
+                if event.key == pygame.K_f and not game_obj.is_paused:
+                    game_obj.hero_interaction()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if not game_obj.hero.is_attacking and not game_obj.is_paused:
                     game_obj.hero_attack()

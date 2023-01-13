@@ -2,6 +2,7 @@ import pygame
 import random
 import settings
 import typing
+import inventory
 
 
 class Hero(pygame.sprite.Sprite):
@@ -14,7 +15,7 @@ class Hero(pygame.sprite.Sprite):
     right_damaged_images = settings.HERO_IMAGES["right_damaged"]
     left_damaged_images = [pygame.transform.flip(i, True, False) for i in right_damaged_images]
 
-    def __init__(self, position: typing.Tuple[int, int], *groups):
+    def __init__(self, position: typing.Tuple[int, int], inventory_obj: inventory.Inventory, *groups):
         super().__init__(*groups)
 
         self.image = Hero.right_standing_images[0]
@@ -24,10 +25,10 @@ class Hero(pygame.sprite.Sprite):
         pygame.time.set_timer(settings.HERO_IMAGE_UPDATE_EVENT_TYPE, 200)  # timer for updating heros image
         pygame.time.set_timer(settings.HERO_STEP_SOUND_EVENT_TYPE, 500)  # timer for turning on the sound of footsteps
 
-        self.name = "Hero"
-        self.inventory = 'inventory'
-        self.damage = 20
+        self.inventory = inventory_obj
+        self.damage = self.inventory.weapon.damage
         self.health = 100
+        self.defence = self.inventory.get_defence_value()
         self.mana = 100
 
         self.direction = 'right'
@@ -48,6 +49,11 @@ class Hero(pygame.sprite.Sprite):
 
     def hit(self, target) -> None:
         target.get_damage(self.damage)
+
+    def update_inventory(self, new_inventory: inventory.Inventory):
+        self.inventory = new_inventory
+        self.damage = self.inventory.weapon.damage
+        self.defence = self.inventory.get_defence_value()
 
     def standing_animation(self) -> None:
         """Updating the picture if the hero stands"""
@@ -98,14 +104,14 @@ class Hero(pygame.sprite.Sprite):
     def get_damage(self, damage: int) -> None:
         if not self.is_died:
             self.is_damaged = True
-            self.health -= damage
+            self.health -= damage * (1 - self.defence)
             self.image = {'left': Hero.left_damaged_images,
                           'right': Hero.right_damaged_images}.get(self.direction)[0]
             if self.health <= 0:
                 self.is_died = True
 
     def update_position(self) -> None:
-        if not self.is_attacking:
+        if not self.is_attacking and not self.is_damaged:
             position = self.get_position()
             keys = pygame.key.get_pressed()
             self.is_walking = any(keys)

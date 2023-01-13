@@ -1,13 +1,17 @@
 import pygame
+import armor
 import settings
 import characters
 import typing
 import camera
 import tools
 import loaders
+import inventory
+import weapons
 
 
 camera_obj = camera.Camera()
+inventory = inventory.Inventory()
 
 
 class Game:
@@ -18,11 +22,18 @@ class Game:
         self.enemies = pygame.sprite.Group()
         self.electro_enemies = pygame.sprite.Group()
         self.alchemists = pygame.sprite.Group()
+        self.items = pygame.sprite.Group()
         self.tiles_arr = loaders.load_map(1, self.all_sprites, self.tiles)
-        self.hero = characters.Hero((500, 500), self.hero_sprite)
+
+        self.hero = characters.Hero((500, 500), inventory, self.hero_sprite)
+
         characters.ElectroEnemy((500, 250), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
         characters.ElectroEnemy((1000, 1000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+
+        weapons.DiamondSword((1000, 700), (70, 70), self.items, self.all_sprites)
+        armor.DiamondHelmet((1200, 500), (60, 60), self.items, self.all_sprites)
         characters.Alchemist((250, 250), self.alchemists, self.all_sprites)
+
         self.is_paused = False
 
     def draw_sprites(self, screen: pygame.Surface) -> None:
@@ -67,6 +78,17 @@ class Game:
         :param hero_position: hero position
         """
         return abs(hero_position[0] - enemy_position[0]) <= 400 and abs(hero_position[1] - enemy_position[1]) <= 400
+
+    def hero_interaction(self):
+        for item in self.items:
+            if self.hero.rect.colliderect(item):
+                if item.type == 'weapon':
+                    inventory.change_weapon(item.give_self())
+                elif item.type == 'armor':
+                    inventory.change_armor(item.give_self(), item.armor_type)
+                self.hero.update_inventory(inventory)
+                item.kill()
+                break
 
     def find_path_step(self, start: typing.Tuple[int, int], target: typing.Tuple[int, int]) -> typing.Tuple[int, int]:
         """
@@ -143,5 +165,6 @@ class Game:
         self.all_sprites.draw(screen)
         self.hero_sprite.draw(screen)
         self.game_update(screen)
-        tools.stats_drawer(screen, self.hero.health, self.hero.mana)
+        tools.draw_stats(screen, self.hero.health, self.hero.mana)
+        inventory.render(screen)
 

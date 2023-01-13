@@ -2,7 +2,6 @@ import os
 import pygame
 import json
 import exceptions
-import tile
 
 
 def load_image(name, colorkey=None):
@@ -14,6 +13,7 @@ def load_image(name, colorkey=None):
 
 
 def load_map(level: int, all_sprites: pygame.sprite.Group, tiles_group: pygame.sprite.Group) -> list:
+    import tile
     tiles_arr = []
     with open(file=f'maps/level{level}.txt', mode='r', encoding="utf-8") as scheme:
         default = scheme.readline()[0]
