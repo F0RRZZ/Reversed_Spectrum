@@ -114,7 +114,7 @@ class Hero(pygame.sprite.Sprite):
         if not self.is_attacking and not self.is_damaged:
             position = self.get_position()
             keys = pygame.key.get_pressed()
-            self.is_walking = any(keys)
+            self.is_walking = keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]
 
             if keys[pygame.K_a]:
                 self.change_direction('left')

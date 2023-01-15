@@ -4,6 +4,7 @@ import game
 import tools
 import settings
 
+
 pygame.mixer.pre_init(44100, -16, 1, 512)
 pygame.init()
 pygame.display.set_caption("Reversed Spectrum")
@@ -106,6 +107,9 @@ def main():
                     game_obj.is_paused = not game_obj.is_paused
                 if event.key == pygame.K_f and not game_obj.is_paused:
                     game_obj.hero_interaction()
+                if event.key in [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5,
+                                 pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9]:
+                    game.inventory.get_features(event.key)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if not game_obj.hero.is_attacking and not game_obj.is_paused:
                     game_obj.hero_attack()

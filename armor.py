@@ -10,6 +10,7 @@ class Armor(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = position
         self.type = "armor"
+        self.stats_checked = False
 
 
 class IronHelmet(Armor):
@@ -19,6 +20,7 @@ class IronHelmet(Armor):
         super().__init__(position, image_scale, *groups)
         self.armor_type = 'helmet'
         self.defence = 3
+        self.mana = 0
 
     @staticmethod
     def give_self():
@@ -32,6 +34,7 @@ class DiamondHelmet(Armor):
         super().__init__(position, image_scale, *groups)
         self.armor_type = 'helmet'
         self.defence = 10
+        self.mana = 0
 
     @staticmethod
     def give_self():
@@ -45,6 +48,7 @@ class IronCuirass(Armor):
         super().__init__(position, image_scale, *groups)
         self.armor_type = 'cuirass'
         self.defence = 5
+        self.mana = 0
 
     @staticmethod
     def give_self():
@@ -58,6 +62,7 @@ class IronGloves(Armor):
         super().__init__(position, image_scale, *groups)
         self.armor_type = 'gloves'
         self.defence = 1
+        self.mana = 0
 
     @staticmethod
     def give_self():
@@ -71,6 +76,7 @@ class IronBoots(Armor):
         super().__init__(position, image_scale, *groups)
         self.armor_type = 'boots'
         self.defence = 1
+        self.mana = 0
 
     @staticmethod
     def give_self():

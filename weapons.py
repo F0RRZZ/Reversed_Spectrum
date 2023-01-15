@@ -10,6 +10,7 @@ class Sword(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = position
         self.type = "weapon"
+        self.stats_checked = False
 
 
 class IronSword(Sword):
@@ -18,6 +19,7 @@ class IronSword(Sword):
     def __init__(self, position: typing.Tuple[int, int], image_scale: typing.Tuple[int, int], *groups):
         super().__init__(position, image_scale, *groups)
         self.damage = 10
+        self.mana = 0
 
     @staticmethod
     def give_self():
@@ -30,6 +32,7 @@ class DiamondSword(Sword):
     def __init__(self, position: typing.Tuple[int, int], image_scale: typing.Tuple[int, int], *groups):
         super().__init__(position, image_scale, *groups)
         self.damage = 40
+        self.mana = 0
 
     @staticmethod
     def give_self():

@@ -151,7 +151,7 @@ class Game:
     def update_enemies(self) -> None:
         pass
 
-    def game_update(self, screen: pygame.Surface) -> None:
+    def game_update(self) -> None:
         """Games update"""
         if not self.is_paused:
             self.hero.update_position()
@@ -164,7 +164,7 @@ class Game:
     def render(self, screen: pygame.Surface):
         self.all_sprites.draw(screen)
         self.hero_sprite.draw(screen)
-        self.game_update(screen)
+        self.game_update()
         tools.draw_stats(screen, self.hero.health, self.hero.mana)
         inventory.render(screen)
 
