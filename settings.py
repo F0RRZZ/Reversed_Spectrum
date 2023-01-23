@@ -3,7 +3,7 @@ import loaders
 
 pygame.mixer.init()
 
-FPS = 30
+FPS = 120
 
 ALCHEMIST_SIZE = (100, 100)
 ELECTRO_ENEMY_SIZE = (150, 150)
@@ -19,18 +19,8 @@ ELECTRO_ENEMY_MOVE_EVENT_TYPE = 51
 MENU_IMAGE = pygame.transform.scale(loaders.load_image("menu_image.png"), (1920, 1080))
 CURSOR_IMAGE = pygame.transform.scale(loaders.load_image("cursor.png"), (50, 50))
 
-FREE_TYLES = ["small hell stone", "large hell stone", "grass", "castle11", "castle12", "castle13", "castle14"]
-
-TILE_IMAGES = {
-    "grass": loaders.load_image("grass.png"),
-    "stone": loaders.load_image("stone.png"),
-    "large hell stone": loaders.load_image("hell_stone2.png"),
-    "small hell stone": loaders.load_image("hell_stone3.png"),
-    "castle11": loaders.load_image("castle1_1.png"),
-    "castle12": loaders.load_image("castle1_2.png"),
-    "castle13": loaders.load_image("castle1_3.png"),
-    "castle14": loaders.load_image("castle1_4.png"),
-}
+FREE_TYLES = ["grass1", "floor_stone1", "bridge_floor1", "bridge_floor2", "bridge_floor3", "hell_block1",
+              "hell_block2", "floor_stone2", "grass2", "grass3", "grass4", "grass5"]
 
 HERO_IMAGES = {
     "right_standing": [pygame.transform.scale(loaders.load_image("hero1.png"), (150, 150)),

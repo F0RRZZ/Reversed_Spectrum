@@ -23,12 +23,11 @@ class Game:
         self.electro_enemies = pygame.sprite.Group()
         self.alchemists = pygame.sprite.Group()
         self.items = pygame.sprite.Group()
-        self.tiles_arr = loaders.load_map(1, self.all_sprites, self.tiles)
+        self.tiles_arr = loaders.load_map(2, self.all_sprites, self.tiles)
 
         self.hero = characters.Hero((500, 500), inventory, self.hero_sprite)
 
-        characters.ElectroEnemy((500, 250), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
-        characters.ElectroEnemy((1000, 1000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+        characters.ElectroEnemy((1500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
 
         weapons.DiamondSword((1000, 700), (70, 70), self.items, self.all_sprites)
         armor.DiamondHelmet((1200, 500), (60, 60), self.items, self.all_sprites)
@@ -68,7 +67,9 @@ class Game:
         Сhecks if the next cell is free.
         :param position: characters position
         """
-        return self.tiles_arr[position[1] // 100][position[0] // 100].type in settings.FREE_TYLES
+        for tile in self.tiles:
+            if tile.rect.collidepoint(position):
+                return tile.type in settings.FREE_TYLES
 
     @staticmethod
     def is_hero_in_sight(enemy_position: typing.Tuple[int, int], hero_position: typing.Tuple[int, int]) -> bool:
@@ -96,7 +97,7 @@ class Game:
         :param start: enemies position
         :param target: targets position
         """
-        step_size = 15
+        step_size = 20
         if start[0] < target[0] and start[1] < target[1] and self.is_free((start[0] + step_size, start[1] + step_size)):
             return start[0] + step_size, start[1] + step_size
         elif start[0] == target[0] and start[1] < target[1] and self.is_free((start[0], start[1] + step_size)):

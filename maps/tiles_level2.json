@@ -1,0 +1,14 @@
+{
+  "#": "barrier6",
+  "$": "barrier4",
+  "%": "wall2",
+  "^": "barrier5",
+  "&": "holder",
+  "w": "water2",
+  "D": "decoration",
+  "g": "grass2",
+  "V": "barrier2",
+  "G": "grass4",
+  "J": "grass3",
+  "L": "grass5"
+}

@@ -8,7 +8,7 @@ import settings
 pygame.mixer.pre_init(44100, -16, 1, 512)
 pygame.init()
 pygame.display.set_caption("Reversed Spectrum")
-screen = pygame.display.set_mode((1900, 1000), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((1900, 1000))
 clock = pygame.time.Clock()
 pygame.mouse.set_visible(False)
 

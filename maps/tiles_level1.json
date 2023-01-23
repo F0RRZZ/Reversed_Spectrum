@@ -1,0 +1,14 @@
+{
+  "#": "wall1",
+  "W": "water1",
+  "g": "grass1",
+  "F": "floor_stone1",
+  "G": "barrier1",
+  "A": "bridge_floor3",
+  "S": "bridge_floor1",
+  "D": "bridge_floor2",
+  "N": "barrier4",
+  "h": "hell_block1",
+  "H": "hell_block2",
+  "B": "floor_stone2"
+}
