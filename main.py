@@ -93,6 +93,10 @@ def pause(screen: pygame.Surface, game: game.Game) -> None:
         pygame.display.flip()
 
 
+def game_over():
+    ...
+
+
 def main():
     game_obj = game.Game()
 

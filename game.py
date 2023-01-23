@@ -127,8 +127,8 @@ class Game:
         Checks if the enemy can hit the hero.
         :param enemy: enemy sprite
         """
-        if enemy.rect.colliderect(self.hero.rect):
-            enemy.attack()
+        if enemy.rect.colliderect(self.hero.rect) and not self.hero.is_damaged and not self.hero.is_died:
+            enemy.set_mode_to_attack()
             enemy.is_running = False
         else:
             enemy.is_running = True

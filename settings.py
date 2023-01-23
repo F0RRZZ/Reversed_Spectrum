@@ -43,7 +43,12 @@ HERO_IMAGES = {
     "right_damaged": [pygame.transform.scale(loaders.load_image("damaged_hero1.png"), (150, 150)),
                       pygame.transform.scale(loaders.load_image("damaged_hero2.png"), (150, 150)),
                       pygame.transform.scale(loaders.load_image("damaged_hero3.png"), (150, 150)),
-                      pygame.transform.scale(loaders.load_image("damaged_hero1.png"), (150, 150))]
+                      pygame.transform.scale(loaders.load_image("damaged_hero1.png"), (150, 150))],
+    "right_died": [pygame.transform.scale(loaders.load_image("died_hero1.png"), (150, 150)),
+                   pygame.transform.scale(loaders.load_image("died_hero2.png"), (150, 150)),
+                   pygame.transform.scale(loaders.load_image("died_hero3.png"), (150, 150)),
+                   pygame.transform.scale(loaders.load_image("died_hero4.png"), (150, 150)),
+                   pygame.transform.scale(loaders.load_image("died_hero5.png"), (150, 150))]
 }
 
 ELECTRO_ENEMY_IMAGES = {
