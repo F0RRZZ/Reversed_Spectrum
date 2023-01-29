@@ -28,10 +28,11 @@ class Game:
         self.hero = characters.Hero((500, 500), inventory, self.hero_sprite)
 
         characters.ElectroEnemy((1500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+        characters.ElectroEnemy((2500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+        characters.ElectroEnemy((2000, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
 
         weapons.DiamondSword((1000, 700), (70, 70), self.items, self.all_sprites)
         armor.DiamondHelmet((1200, 500), (60, 60), self.items, self.all_sprites)
-        characters.Alchemist((250, 250), self.alchemists, self.all_sprites)
 
         self.is_paused = False
 

@@ -27,11 +27,14 @@ class Hero(pygame.sprite.Sprite):
         pygame.time.set_timer(settings.HERO_IMAGE_UPDATE_EVENT_TYPE, 200)  # timer for updating heros image
         pygame.time.set_timer(settings.HERO_STEP_SOUND_EVENT_TYPE, 500)  # timer for turning on the sound of footsteps
 
+        self.enemies_killed = 0
+
         self.inventory = inventory_obj
         self.damage = self.inventory.weapon.damage
         self.health = 100
         self.defence = self.inventory.get_defence_value()
         self.mana = 100
+        self.coins = 0
 
         self.direction = 'right'
         self.is_attacking = False
@@ -50,7 +53,7 @@ class Hero(pygame.sprite.Sprite):
         settings.HERO_SOUNDS[f"attack{random.randint(1, 2)}"].play()
 
     def hit(self, target) -> None:
-        target.get_damage(self.damage)
+        target.get_damage(self.damage, self)
 
     def update_inventory(self, new_inventory: inventory.Inventory):
         self.inventory = new_inventory
@@ -212,6 +215,7 @@ class Enemy(pygame.sprite.Sprite):
         self.is_died = False
 
         self.target = target
+        self.coins = random.randint(15, 20)
 
         pygame.time.set_timer(settings.ELECTRO_ENEMY_EVENT_TYPE, 120)
         pygame.time.set_timer(settings.ELECTRO_ENEMY_MOVE_EVENT_TYPE, 100)
@@ -226,7 +230,7 @@ class Enemy(pygame.sprite.Sprite):
     def hit(self, hero: Hero) -> None:
         hero.get_damage(self.damage)
 
-    def get_damage(self, damage: int) -> None:
+    def get_damage(self, damage: int, hero: Hero) -> None:
         if not self.is_died:
             self.is_damaged = True
             self.health -= damage
@@ -234,6 +238,8 @@ class Enemy(pygame.sprite.Sprite):
                           'right': self.images_damaged_right}.get(self.direction)[0]
             if self.health <= 0:
                 self.is_died = True
+                hero.enemies_killed += 1
+                hero.coins += self.coins
 
     def standing_animation(self) -> None:
         images = {'left': self.images_standing_left, 'right': self.images_standing_right}
@@ -260,7 +266,7 @@ class Enemy(pygame.sprite.Sprite):
             self.image = images[self.direction][image_index + 1]
         except ValueError:
             self.image = images[self.direction][0]
-        if image_index == 9:
+        if image_index == 8:
             self.is_attacking = False
             if self.rect.colliderect(self.target.rect):
                 self.hit(self.target)

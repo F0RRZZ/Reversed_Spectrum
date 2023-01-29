@@ -16,7 +16,6 @@ def load_map(level: int, all_sprites: pygame.sprite.Group, tiles_group: pygame.s
     import tile
     tiles_arr = []
     with open(file=f'maps/level{level}.txt', mode='r', encoding="utf-8") as scheme:
-        default = scheme.readline()[0]
         tiles = [list(i.replace('\n', '')) for i in scheme.readlines()]
         with open(file=f"maps/tiles_level{level}.json", mode='r', encoding="utf-8") as ids:
             tiles_ids = json.load(ids)
