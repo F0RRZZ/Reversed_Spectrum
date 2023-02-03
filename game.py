@@ -23,18 +23,20 @@ class Game:
         self.electro_enemies = pygame.sprite.Group()
         self.alchemists = pygame.sprite.Group()
         self.items = pygame.sprite.Group()
-        self.tiles_arr = loaders.load_map(2, self.all_sprites, self.tiles)
 
         self.hero = characters.Hero((500, 500), inventory, self.hero_sprite)
 
-        characters.ElectroEnemy((1500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
-        characters.ElectroEnemy((2500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
-        characters.ElectroEnemy((2000, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
-
-        weapons.DiamondSword((1000, 700), (70, 70), self.items, self.all_sprites)
-        armor.DiamondHelmet((1200, 500), (60, 60), self.items, self.all_sprites)
-
         self.is_paused = False
+
+    def load_map(self, level: int) -> None:
+        loaders.map_loader(level, self.all_sprites, self.tiles)
+        if level == 1:
+            characters.ElectroEnemy((1500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2000, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+
+            weapons.DiamondSword((1000, 700), (70, 70), self.items, self.all_sprites)
+            armor.DiamondHelmet((1200, 500), (60, 60), self.items, self.all_sprites)
 
     def draw_sprites(self, screen: pygame.Surface) -> None:
         """Drawing all tiles"""
@@ -79,7 +81,7 @@ class Game:
         :param enemy_position: enemy position
         :param hero_position: hero position
         """
-        return abs(hero_position[0] - enemy_position[0]) <= 400 and abs(hero_position[1] - enemy_position[1]) <= 400
+        return abs(hero_position[0] - enemy_position[0]) <= 500 and abs(hero_position[1] - enemy_position[1]) <= 500
 
     def hero_interaction(self):
         for item in self.items:
@@ -156,7 +158,7 @@ class Game:
     def game_update(self) -> None:
         """Games update"""
         if not self.is_paused:
-            self.hero.update_position()
+            self.hero.update_position(self.tiles)
             camera_obj.update(self.hero)
             for sprite in self.all_sprites:
                 camera_obj.apply(sprite)
@@ -167,6 +169,6 @@ class Game:
         self.all_sprites.draw(screen)
         self.hero_sprite.draw(screen)
         self.game_update()
-        tools.draw_stats(screen, self.hero.health, self.hero.mana)
+        tools.draw_stats(screen, self.hero.health, self.hero.mana, self.hero.coins)
         inventory.render(screen)
 

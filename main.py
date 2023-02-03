@@ -1,9 +1,18 @@
+import sqlite3
 import sys
 import pygame
 import characters
 import game
 import tools
 import settings
+import registration
+import typing
+
+with open('account_data.txt') as file:
+    if not len(file.readlines()):
+        registration.start()
+        if not len(file.readlines()):
+            sys.exit('Registration failed')
 
 pygame.mixer.pre_init(44100, -16, 1, 512)
 pygame.init()
@@ -14,12 +23,24 @@ clock = pygame.time.Clock()
 pygame.mouse.set_visible(False)
 
 game_obj = game.Game()
+level = 1
 
 
 def terminate():
     """Terminates the program"""
     pygame.quit()
     sys.exit()
+
+
+def change_cursor_image() -> typing.Tuple[pygame.sprite.Group, pygame.sprite.Sprite]:
+    cursor_sprite_group = pygame.sprite.Group()
+
+    cursor_image = settings.CURSOR_IMAGE
+    cursor = pygame.sprite.Sprite(cursor_sprite_group)
+    cursor.image = cursor_image
+    cursor.rect = cursor.image.get_rect()
+
+    return cursor_sprite_group, cursor
 
 
 def menu():
@@ -31,12 +52,7 @@ def menu():
     pygame.mixer.music.set_volume(0.3)
     pygame.mixer.music.play(loops=-1)
 
-    cursor_sprite_group = pygame.sprite.Group()
-
-    cursor_image = settings.CURSOR_IMAGE
-    cursor = pygame.sprite.Sprite(cursor_sprite_group)
-    cursor.image = cursor_image
-    cursor.rect = cursor.image.get_rect()
+    cursor_sprite_group, cursor = change_cursor_image()
 
     while True:
         screen.fill((0, 0, 0))
@@ -44,7 +60,9 @@ def menu():
 
         tools.create_button(screen, "Reversed Spectrum", "center", 50, 128)
         start_button = tools.create_button(screen, "Начать игру", "center", 600, 64)
-        quit_button = tools.create_button(screen, "Выйти из игры", "center", 700, 64)
+        choose_level_button = tools.create_button(screen, "Выбрать уровень", "center", 700, 64)
+        profile_button = tools.create_button(screen, "Профиль", "center", 800, 64)
+        quit_button = tools.create_button(screen, "Выйти из игры", "center", 900, 64)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
@@ -56,10 +74,96 @@ def menu():
                     settings.MENU_SOUNDS["hover"].play()
                     pygame.mixer.music.stop()
                     game_obj = game.Game()
+                    game_obj.load_map(level)
                     return
                 elif quit_button[0][0] <= event.pos[0] <= quit_button[1][0] and quit_button[0][1] <= event.pos[1] <= \
                         quit_button[1][1]:
                     terminate()
+                elif profile_button[0][0] <= event.pos[0] <= profile_button[1][0] and\
+                        profile_button[0][1] <= event.pos[1] <= profile_button[1][1]:
+                    show_profile(screen)
+                    return
+                elif choose_level_button[0][0] <= event.pos[0] <= choose_level_button[1][0] and\
+                        choose_level_button[0][1] <= event.pos[1] <= choose_level_button[1][1]:
+                    level_selection(screen)
+                    return
+        cursor_sprite_group.draw(screen)
+        pygame.display.flip()
+
+
+def level_selection(screen: pygame.Surface) -> None:
+    """
+    Level selection menu
+    :param screen: pygame surface object
+    """
+
+    global game_obj, level
+
+    cursor_sprite_group, cursor = change_cursor_image()
+
+    while True:
+        screen.fill((0, 0, 0))
+        screen.blit(settings.LEVEL_SELECTION_IMAGE, (0, 0))
+        title = tools.create_button(screen, 'Уровни', "center", 20, 100)
+        buttons = [tools.create_button(screen, '  1  ', 650, 500, 100),
+                   tools.create_button(screen, '  2  ', 1150, 500, 100)]
+        quit_button = tools.create_button(screen, 'Назад', "center", 980, 100)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    menu()
+                    return
+            if event.type == pygame.MOUSEMOTION:
+                cursor.rect.topleft = event.pos
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for i, button in enumerate(buttons):
+                    if button[0][0] <= event.pos[0] <= button[1][0] and button[0][1] <= event.pos[1] <= button[1][1]:
+                        level = i + 1
+                        game_obj = game.Game()
+                        game_obj.load_map(level)
+                        return
+                if quit_button[0][0] <= event.pos[0] <= quit_button[1][0] and quit_button[0][1] <= event.pos[1] <= \
+                        quit_button[1][1]:
+                    menu()
+                    return
+        cursor_sprite_group.draw(screen)
+        pygame.display.flip()
+
+
+def show_profile(screen: pygame.Surface) -> None:
+    """
+    Viewing a profile
+    :param screen: pygame surface object
+    """
+    cursor_sprite_group, cursor = change_cursor_image()
+
+    with open(file='account_data.txt', mode='r', encoding='utf-8') as file:
+        nickname, kills, coins, levels_complete = list(map(lambda x: x[:-1] if '\n' in x else x, file.readlines()))
+
+    while True:
+        screen.fill((0, 0, 0))
+        screen.blit(settings.PROFILE_SHOW_IMAGE, (0, 0))
+        nick_label = tools.create_button(screen, nickname, "center", 20, 100)
+        quit_button = tools.create_button(screen, 'Назад', "center", 980, 100)
+        kills_view = tools.create_button(screen, f"Убийства: {kills}", 300, "center", 100)
+        coins_view = tools.create_button(screen, f"Монеты: {coins}", 800, "center", 100)
+        lvls_view = tools.create_button(screen, f"Уровни: {levels_complete}", 1300, "center", 100)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == pygame.MOUSEMOTION:
+                cursor.rect.topleft = event.pos
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    menu()
+                    return
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if quit_button[0][0] <= event.pos[0] <= quit_button[1][0] and quit_button[0][1] <= event.pos[1] <= \
+                        quit_button[1][1]:
+                    menu()
+                    return
         cursor_sprite_group.draw(screen)
         pygame.display.flip()
 
@@ -72,12 +176,7 @@ def pause(screen: pygame.Surface) -> None:
 
     global game_obj
 
-    cursor_sprite_group = pygame.sprite.Group()
-
-    cursor_image = settings.CURSOR_IMAGE
-    cursor = pygame.sprite.Sprite(cursor_sprite_group)
-    cursor.image = cursor_image
-    cursor.rect = cursor.image.get_rect()
+    cursor_sprite_group, cursor = change_cursor_image()
 
     while True:
         screen.fill((0, 0, 0))
@@ -102,20 +201,29 @@ def pause(screen: pygame.Surface) -> None:
         pygame.display.flip()
 
 
+def win(coins: int, kills: int):
+    ...
+
+
 def game_over(coins: int, kills: int):
     global game_obj
+
+    with open(file='account_data.txt', mode='r', encoding='utf-8') as file:
+        nickname, kills_file, coins_file, levels_complete = list(map(lambda x: x[:-1] if '\n' in x else x, file.readlines()))
+
+    with open(file='account_data.txt', mode='w', encoding='utf-8') as file:
+        with sqlite3.connect("database.sqlite") as connection:
+            cur = connection.cursor()
+            cur.execute("""UPDATE data SET kills = kills + ? WHERE nickname = ?""", (kills, nickname))
+            cur.execute("""UPDATE data SET coins = coins + ? WHERE nickname = ?""", (coins, nickname))
+        file.write(f"{nickname}\n{int(kills_file) + kills}\n{int(coins_file) + coins}\n0")
 
     font = pygame.font.Font(None, 100)
 
     kills_text = font.render(f": {kills}", True, pygame.Color('white'))
     coins_text = font.render(f": {coins}", True, pygame.Color('white'))
 
-    cursor_sprite_group = pygame.sprite.Group()
-
-    cursor_image = settings.CURSOR_IMAGE
-    cursor = pygame.sprite.Sprite(cursor_sprite_group)
-    cursor.image = cursor_image
-    cursor.rect = cursor.image.get_rect()
+    cursor_sprite_group, cursor = change_cursor_image()
 
     stats_group = pygame.sprite.Group()
     stats_group.add(tools.create_sprite('skull.png', (300, 300), (300, 300)))
@@ -149,7 +257,7 @@ def game_over(coins: int, kills: int):
 
 
 def main():
-    global game_obj
+    global game_obj, level
     menu()
 
     running = True

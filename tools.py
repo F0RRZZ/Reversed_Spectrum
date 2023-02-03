@@ -50,20 +50,29 @@ def create_button(screen: pygame.Surface, text: str, x: typing.Union[int, str], 
              text_rect.y + text_rendered.get_height() + 10))
 
 
-def draw_stats(screen: pygame.Surface, health: int, mana: int) -> None:
+def draw_stats(screen: pygame.Surface, health: int, mana: int, coins: int | str) -> None:
     """
     Renders heros stats.
     :param screen: pygame surface object
     :param health: health points
     :param mana: mana points
+    :param coins: coins value
     """
     stats_group = pygame.sprite.Group()
     hurt = create_sprite("hurt.png", (50, 50), (10, 10))
     flask = create_sprite("mana.png", (60, 60), (5, 80))
+    coin = create_sprite("coin.png", (50, 50), (1750, 10))
     stats_group.add(hurt)
     stats_group.add(flask)
+    stats_group.add(coin)
     pygame.draw.rect(screen, pygame.Color("black"), (80, 10, 400, 50), 0)
     pygame.draw.rect(screen, pygame.Color("red"), (85, 15, health * 4 - 10, 40), 0)
     pygame.draw.rect(screen, pygame.Color("black"), (80, 90, 400, 50), 0)
     pygame.draw.rect(screen, (47, 28, 255), (85, 95, mana * 4 - 10, 40), 0)
+
+    font = pygame.font.Font(None, 50)
+
+    coins_value_text = font.render(str(coins), True, pygame.Color('white'))
+    screen.blit(coins_value_text, (1820, 20))
+
     stats_group.draw(screen)

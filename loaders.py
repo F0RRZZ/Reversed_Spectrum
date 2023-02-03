@@ -12,7 +12,7 @@ def load_image(name, colorkey=None):
     return image
 
 
-def load_map(level: int, all_sprites: pygame.sprite.Group, tiles_group: pygame.sprite.Group) -> list:
+def map_loader(level: int, all_sprites: pygame.sprite.Group, tiles_group: pygame.sprite.Group):
     import tile
     tiles_arr = []
     with open(file=f'maps/level{level}.txt', mode='r', encoding="utf-8") as scheme:
@@ -25,4 +25,3 @@ def load_map(level: int, all_sprites: pygame.sprite.Group, tiles_group: pygame.s
                     t = tile.Tile(tiles_ids[tiles[row][t]], 100 * t, 100 * row, (100, 100), all_sprites, tiles_group)
                     temp.append(t)
                 tiles_arr.append(temp)
-    return tiles_arr

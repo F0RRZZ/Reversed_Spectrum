@@ -89,6 +89,7 @@ class Hero(pygame.sprite.Sprite):
             self.is_attacking = False
 
     def damaged_animation(self) -> None:
+        """Updating the picture if the hero takes damage"""
         images = {'left': Hero.left_damaged_images, 'right': Hero.right_damaged_images}
         try:
             image_index = images[self.direction].index(self.image) + 1
@@ -99,6 +100,7 @@ class Hero(pygame.sprite.Sprite):
             self.is_damaged = False
 
     def died_animation(self):
+        """Updating the picture if the hero takes dies"""
         images = {'left': Hero.left_died_images, 'right': Hero.right_died_images}
         image_index = images[self.direction].index(self.image)
         if image_index == len(Hero.right_died_images) - 1:
@@ -115,6 +117,10 @@ class Hero(pygame.sprite.Sprite):
             self.image = Hero.left_walking_images[0]
 
     def get_damage(self, damage: int) -> None:
+        """
+        Taking damage
+        :param damage: damage value
+        """
         if not self.is_died:
             self.is_damaged = True
             self.health -= damage * (1 - self.defence)
@@ -126,9 +132,9 @@ class Hero(pygame.sprite.Sprite):
                 self.image = {'left': Hero.left_damaged_images,
                               'right': Hero.right_damaged_images}.get(self.direction)[0]
 
-    def update_position(self) -> None:
+    def update_position(self, tiles: pygame.sprite.Group) -> None:
         if not self.is_attacking and not self.is_damaged:
-            position = self.get_position()
+            position = list(self.get_position())
             keys = pygame.key.get_pressed()
             self.is_walking = keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]
 
@@ -138,21 +144,36 @@ class Hero(pygame.sprite.Sprite):
                 self.change_direction('right')
 
             if keys[pygame.K_w] and keys[pygame.K_d]:
-                self.set_position((position[0] + settings.HERO_MOVE_SPEED, position[1] - settings.HERO_MOVE_SPEED))
+                position[0] += settings.HERO_MOVE_SPEED
+                position[1] -= settings.HERO_MOVE_SPEED
             elif keys[pygame.K_w] and keys[pygame.K_a]:
-                self.set_position((position[0] - settings.HERO_MOVE_SPEED, position[1] - settings.HERO_MOVE_SPEED))
+                position[0] -= settings.HERO_MOVE_SPEED
+                position[1] -= settings.HERO_MOVE_SPEED
             elif keys[pygame.K_s] and keys[pygame.K_d]:
-                self.set_position((position[0] + settings.HERO_MOVE_SPEED, position[1] + settings.HERO_MOVE_SPEED))
+                position[0] += settings.HERO_MOVE_SPEED
+                position[1] += settings.HERO_MOVE_SPEED
             elif keys[pygame.K_s] and keys[pygame.K_a]:
-                self.set_position((position[0] - settings.HERO_MOVE_SPEED, position[1] + settings.HERO_MOVE_SPEED))
+                position[0] -= settings.HERO_MOVE_SPEED
+                position[1] += settings.HERO_MOVE_SPEED
             elif keys[pygame.K_d]:
-                self.set_position((position[0] + settings.HERO_MOVE_SPEED, position[1]))
+                position[0] += settings.HERO_MOVE_SPEED
             elif keys[pygame.K_a]:
-                self.set_position((position[0] - settings.HERO_MOVE_SPEED, position[1]))
+                position[0] -= settings.HERO_MOVE_SPEED
             elif keys[pygame.K_w]:
-                self.set_position((position[0], position[1] - settings.HERO_MOVE_SPEED))
+                position[1] -= settings.HERO_MOVE_SPEED
             elif keys[pygame.K_s]:
-                self.set_position((position[0], position[1] + settings.HERO_MOVE_SPEED))
+                position[1] += settings.HERO_MOVE_SPEED
+
+            position = position[0], position[1]
+            # creating rect repeating heros rect (needed for accurate tuning)
+            rect_model = pygame.Rect((position[0] + 100 * (-1 if keys[pygame.K_a] else 1),
+                                      position[1] + 130 * (-1 if keys[pygame.K_w] else 1),
+                                      150, 150))
+            for tile in tiles:
+                if tile.rect.colliderect(rect_model):
+                    if tile.type in settings.FREE_TYLES:
+                        self.set_position(position)
+                        break
 
     def attack(self) -> None:
         """Switches hero mode to attack"""

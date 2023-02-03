@@ -3,7 +3,7 @@ import loaders
 
 pygame.mixer.init()
 
-FPS = 1000
+FPS = 120
 
 ALCHEMIST_SIZE = (100, 100)
 ELECTRO_ENEMY_SIZE = (150, 150)
@@ -18,6 +18,8 @@ ELECTRO_ENEMY_MOVE_EVENT_TYPE = 51
 
 MENU_IMAGE = pygame.transform.scale(loaders.load_image("menu_image.png"), (1920, 1080))
 GAME_OVER_IMAGE = pygame.transform.scale(loaders.load_image("game over.png"), (1920, 1080))
+LEVEL_SELECTION_IMAGE = pygame.transform.scale(loaders.load_image("level_selection_menu_bg.png"), (1920, 1080))
+PROFILE_SHOW_IMAGE = pygame.transform.scale(loaders.load_image("profile_img.jpg"), (1920, 1080))
 CURSOR_IMAGE = pygame.transform.scale(loaders.load_image("cursor.png"), (50, 50))
 
 FREE_TYLES = ["grass1", "floor_stone1", "bridge_floor1", "bridge_floor2", "bridge_floor3", "hell_block1",
