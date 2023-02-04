@@ -50,7 +50,7 @@ def create_button(screen: pygame.Surface, text: str, x: typing.Union[int, str], 
              text_rect.y + text_rendered.get_height() + 10))
 
 
-def draw_stats(screen: pygame.Surface, health: int, mana: int, coins: int | str) -> None:
+def draw_stats(screen: pygame.Surface, health: int, mana: int, coins: typing.Union[int, str]) -> None:
     """
     Renders heros stats.
     :param screen: pygame surface object
