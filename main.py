@@ -1,5 +1,6 @@
 import sqlite3
 import sys
+import datetime
 import pygame
 import characters
 import game
@@ -81,10 +82,12 @@ def menu():
                     terminate()
                 elif profile_button[0][0] <= event.pos[0] <= profile_button[1][0] and\
                         profile_button[0][1] <= event.pos[1] <= profile_button[1][1]:
+                    pygame.mixer.music.stop()
                     show_profile(screen)
                     return
                 elif choose_level_button[0][0] <= event.pos[0] <= choose_level_button[1][0] and\
                         choose_level_button[0][1] <= event.pos[1] <= choose_level_button[1][1]:
+                    pygame.mixer.music.stop()
                     level_selection(screen)
                     return
         cursor_sprite_group.draw(screen)
@@ -120,10 +123,20 @@ def level_selection(screen: pygame.Surface) -> None:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for i, button in enumerate(buttons):
                     if button[0][0] <= event.pos[0] <= button[1][0] and button[0][1] <= event.pos[1] <= button[1][1]:
-                        level = i + 1
-                        game_obj = game.Game()
-                        game_obj.load_map(level)
-                        return
+                        if i == 1:
+                            with open(file='account_data.txt', mode='r', encoding='utf-8') as file:
+                                levels_complete = file.readlines()[-1]
+                            if int(levels_complete) >= 1:
+                                level = i + 1
+                                cutscene(screen)
+                                game_obj = game.Game()
+                                game_obj.load_map(level)
+                                return
+                        else:
+                            level = i + 1
+                            game_obj = game.Game()
+                            game_obj.load_map(level)
+                            return
                 if quit_button[0][0] <= event.pos[0] <= quit_button[1][0] and quit_button[0][1] <= event.pos[1] <= \
                         quit_button[1][1]:
                     menu()
@@ -202,7 +215,107 @@ def pause(screen: pygame.Surface) -> None:
 
 
 def win(coins: int, kills: int):
-    ...
+
+    with open(file='account_data.txt', mode='r', encoding='utf-8') as file:
+        nickname, kills_file, coins_file, levels_complete = list(map(lambda x: x[:-1] if '\n' in x else x, file.readlines()))
+
+    with open(file='account_data.txt', mode='w', encoding='utf-8') as file:
+        with sqlite3.connect("database.sqlite") as connection:
+            cur = connection.cursor()
+            cur.execute("""UPDATE data SET kills = kills + ? WHERE nickname = ?""", (kills, nickname))
+            cur.execute("""UPDATE data SET coins = coins + ? WHERE nickname = ?""", (coins, nickname))
+            cur.execute("""UPDATE data SET levels_complite = ? WHERE nickname = ?""", (level, nickname))
+        file.write(f"{nickname}\n{int(kills_file) + kills}\n{int(coins_file) + coins}\n{level}")
+
+    cursor_sprite_group, cursor = change_cursor_image()
+
+    font = pygame.font.Font(None, 100)
+
+    kills_text = font.render(f": {kills}", True, pygame.Color('white'))
+    coins_text = font.render(f": {coins}", True, pygame.Color('white'))
+
+    stats_group = pygame.sprite.Group()
+    stats_group.add(tools.create_sprite('skull.png', (300, 300), (300, 300)))
+    stats_group.add(tools.create_sprite('coin.png', (180, 180), (1200, 360)))
+
+    while True:
+        screen.fill((0, 0, 0))
+        screen.blit(settings.WIN_IMAGE, (0, 0))
+        screen.blit(kills_text, (570, 430))
+        screen.blit(coins_text, (1420, 430))
+
+        tools.create_button(screen, "Победа!", "center", 50, 128)
+        menu_button = tools.create_button(screen, "Выйти в главное меню", "center", 800, 64)
+        exit_btn = tools.create_button(screen, "Выйти из игры", "center", 900, 64)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == pygame.MOUSEMOTION:
+                cursor.rect.topleft = event.pos
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if menu_button[0][0] <= event.pos[0] <= menu_button[1][0] and menu_button[0][1] <= event.pos[1] <= \
+                        menu_button[1][1]:
+                    menu()
+                    return
+                elif exit_btn[0][0] <= event.pos[0] <= exit_btn[1][0] and exit_btn[0][1] <= event.pos[1] <= \
+                        exit_btn[1][1]:
+                    terminate()
+        stats_group.draw(screen)
+        cursor_sprite_group.draw(screen)
+        pygame.display.flip()
+
+
+def cutscene(screen: pygame.Surface):
+    pygame.mixer.music.load("sounds/story.mp3")
+    pygame.mixer.music.set_volume(0.3)
+    pygame.mixer.music.play(loops=-1)
+
+    pygame.time.set_timer(777, 30)
+    now = datetime.datetime.now()
+
+    candles = False
+    cook = False
+
+    index = 0
+    while True:
+        if not candles:
+            path = f'cutscene/{index}.png'
+        else:
+            if not cook:
+                path = f'cutscene/candles/{index + 1}.png'
+            else:
+                path = f'cutscene/candles/cook{index}.png'
+        screen.blit(pygame.transform.scale(pygame.image.load(path), (1920, 1080)), (0, 0))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.mixer.music.stop()
+                return
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.mixer.music.stop()
+                    return
+            if event.type == 777:
+                if not candles:
+                    if index < 22 and (datetime.datetime.now() - now).seconds > 40:
+                        index += 1
+                        if index == 22:
+                            candles = True
+                            pygame.time.set_timer(777, 60)
+                            index = 0
+                    else:
+                        index = 0
+                else:
+                    if (datetime.datetime.now() - now).seconds > 69 and not cook:
+                        cook = True
+                        index = 0
+                    if cook:
+                        if index == 6:
+                            return
+                        index += 1
+                    else:
+                        index += 1
+                        index %= 30
+        pygame.display.flip()
 
 
 def game_over(coins: int, kills: int):
@@ -260,6 +373,9 @@ def main():
     global game_obj, level
     menu()
 
+    if level == 1:
+        cutscene(screen)
+
     running = True
     while running:
         screen.fill(pygame.Color("black"))
@@ -291,6 +407,8 @@ def main():
         if game_obj.hero.is_died and game_obj.hero.image in (characters.Hero.left_died_images[-1],
                                                              characters.Hero.right_died_images[-1]):
             game_over(game_obj.hero.coins, game_obj.hero.enemies_killed)
+        if not len(game_obj.enemies):
+            win(game_obj.hero.coins, game_obj.hero.enemies_killed)
         game_obj.render(screen)
         if game_obj.is_paused:
             pause(screen)

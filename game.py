@@ -24,19 +24,46 @@ class Game:
         self.alchemists = pygame.sprite.Group()
         self.items = pygame.sprite.Group()
 
-        self.hero = characters.Hero((500, 500), inventory, self.hero_sprite)
-
         self.is_paused = False
 
     def load_map(self, level: int) -> None:
         loaders.map_loader(level, self.all_sprites, self.tiles)
         if level == 1:
+            self.hero = characters.Hero((500, 500), inventory, self.hero_sprite)
             characters.ElectroEnemy((1500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
             characters.ElectroEnemy((2500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
             characters.ElectroEnemy((2000, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
 
-            weapons.DiamondSword((1000, 700), (70, 70), self.items, self.all_sprites)
-            armor.DiamondHelmet((1200, 500), (60, 60), self.items, self.all_sprites)
+            characters.ElectroEnemy((1750, 1000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2750, 1000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2250, 1000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+
+            characters.ElectroEnemy((1750, 2000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2750, 2000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2250, 2000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+
+            characters.ElectroEnemy((5500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((6500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((6000, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+
+            characters.ElectroEnemy((5750, 1000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((6750, 1000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((6250, 1000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+
+            characters.ElectroEnemy((5750, 2000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((6750, 2000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((6250, 2000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+
+            weapons.DiamondSword((4300, 1500), (70, 70), self.items, self.all_sprites)
+        elif level == 2:
+            self.hero = characters.Hero((1300, 1200), inventory, self.hero_sprite)
+
+            characters.ElectroEnemy((1500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2000, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((1500, 2500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2500, 2500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2000, 2500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
 
     def draw_sprites(self, screen: pygame.Surface) -> None:
         """Drawing all tiles"""

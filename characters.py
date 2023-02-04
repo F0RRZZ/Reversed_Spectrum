@@ -248,6 +248,10 @@ class Enemy(pygame.sprite.Sprite):
         self.direction = 'left' if self.rect.x > position[0] else 'right'
         self.rect.x, self.rect.y = position
 
+    @staticmethod
+    def play_attack_sound() -> None:
+        settings.ENEMY_SOUNDS["attack1"].play()
+
     def hit(self, hero: Hero) -> None:
         hero.get_damage(self.damage)
 
@@ -289,6 +293,7 @@ class Enemy(pygame.sprite.Sprite):
             self.image = images[self.direction][0]
         if image_index == 8:
             self.is_attacking = False
+            self.play_attack_sound()
             if self.rect.colliderect(self.target.rect):
                 self.hit(self.target)
 

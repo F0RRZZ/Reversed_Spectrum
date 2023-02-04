@@ -18,6 +18,7 @@ ELECTRO_ENEMY_MOVE_EVENT_TYPE = 51
 
 MENU_IMAGE = pygame.transform.scale(loaders.load_image("menu_image.png"), (1920, 1080))
 GAME_OVER_IMAGE = pygame.transform.scale(loaders.load_image("game over.png"), (1920, 1080))
+WIN_IMAGE = pygame.transform.scale(loaders.load_image("win_img.png"), (1920, 1080))
 LEVEL_SELECTION_IMAGE = pygame.transform.scale(loaders.load_image("level_selection_menu_bg.png"), (1920, 1080))
 PROFILE_SHOW_IMAGE = pygame.transform.scale(loaders.load_image("profile_img.jpg"), (1920, 1080))
 CURSOR_IMAGE = pygame.transform.scale(loaders.load_image("cursor.png"), (50, 50))
@@ -112,3 +113,4 @@ MENU_SOUNDS = {"hover": pygame.mixer.Sound('sounds/menu/hover.wav')}
 HERO_SOUNDS = {"step": pygame.mixer.Sound('sounds/hero/step.wav'),
                "attack1": pygame.mixer.Sound('sounds/hero/attack1.wav'),
                "attack2": pygame.mixer.Sound('sounds/hero/attack2.wav')}
+ENEMY_SOUNDS = {"attack1": pygame.mixer.Sound('sounds/enemy/enemy_attack.mp3')}
