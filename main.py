@@ -266,6 +266,9 @@ def win(coins: int, kills: int):
 
 
 def cutscene(screen: pygame.Surface):
+    global level
+    if level != 1:
+        return
     pygame.mixer.music.load("sounds/story.mp3")
     pygame.mixer.music.set_volume(0.3)
     pygame.mixer.music.play(loops=-1)
@@ -374,8 +377,7 @@ def main():
     global game_obj, level
     menu()
 
-    if level == 1:
-        cutscene(screen)
+    cutscene(screen)
 
     running = True
     while running:
