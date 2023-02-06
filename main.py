@@ -310,6 +310,7 @@ def cutscene(screen: pygame.Surface):
                         index = 0
                     if cook:
                         if index == 6:
+                            pygame.mixer.music.stop()
                             return
                         index += 1
                     else:
