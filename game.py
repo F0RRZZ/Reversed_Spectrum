@@ -1,13 +1,17 @@
 import pygame
-import random
+import armor
+import settings
+import characters
+import typing
+import camera
+import tools
+import loaders
+import inventory
+import weapons
 
-from settings import *
-from characters import *
-from textures import Tile
-from typing import Tuple
-from camera import Camera
 
-camera = Camera()
+camera_obj = camera.Camera()
+inventory = inventory.Inventory()
 
 
 class Game:
@@ -18,25 +22,58 @@ class Game:
         self.enemies = pygame.sprite.Group()
         self.electro_enemies = pygame.sprite.Group()
         self.alchemists = pygame.sprite.Group()
-        self.tiles_arr = []
-        for y in range(13):
-            temp = []
-            for x in range(20):
-                num = random.randint(0, 1)
-                if num:
-                    tile = Tile("large hell stone", 100 * x, 100 * y, self.tiles, self.all_sprites)
-                else:
-                    tile = Tile("small hell stone", 100 * x, 100 * y, self.tiles, self.all_sprites)
-                temp.append(tile)
-            self.tiles_arr.append(temp)
-        ElectroEnemy((500, 250), self.enemies, self.electro_enemies, self.all_sprites)
-        Alchemist((250, 250), self.alchemists, self.all_sprites)
-        self.hero = Hero((500, 500), self.hero_sprite, self.all_sprites)
+        self.items = pygame.sprite.Group()
+
         self.is_paused = False
+
+    def load_map(self, level: int) -> None:
+        loaders.map_loader(level, self.all_sprites, self.tiles)
+        if level == 1:
+            self.hero = characters.Hero((500, 500), inventory, self.hero_sprite)
+            characters.ElectroEnemy((1500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2000, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+
+            characters.ElectroEnemy((1750, 1000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2750, 1000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2250, 1000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+
+            characters.ElectroEnemy((1750, 2000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2750, 2000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2250, 2000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+
+            characters.ElectroEnemy((5500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((6500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((6000, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+
+            characters.ElectroEnemy((5750, 1000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((6750, 1000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((6250, 1000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+
+            characters.ElectroEnemy((5750, 2000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((6750, 2000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((6250, 2000), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+
+            weapons.DiamondSword((4300, 1500), (70, 70), self.items, self.all_sprites)
+        elif level == 2:
+            self.hero = characters.Hero((1300, 1200), inventory, self.hero_sprite)
+
+            characters.ElectroEnemy((1500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2500, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2000, 1500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((1500, 2500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2500, 2500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
+            characters.ElectroEnemy((2000, 2500), self.hero, self.enemies, self.electro_enemies, self.all_sprites)
 
     def draw_sprites(self, screen: pygame.Surface) -> None:
         """Drawing all tiles"""
         self.all_sprites.draw(screen)
+
+    def hero_attack(self):
+        for enemy in self.enemies:
+            if self.hero.rect.colliderect(enemy.rect):
+                self.hero.hit(enemy)
+        self.hero.attack()
 
     def update_alchemists_images(self) -> None:
         """Updating the alchemists picture"""
@@ -55,14 +92,42 @@ class Game:
             for sprite in self.electro_enemies:
                 sprite.update_image()
 
-    def is_free(self, position: Tuple[int, int]) -> bool:
-        return self.tiles_arr[position[1] // 100][position[0] // 100].type in FREE_TYLES
+    def is_free(self, position: typing.Tuple[int, int]) -> bool:
+        """
+        Сhecks if the next cell is free.
+        :param position: characters position
+        """
+        for tile in self.tiles:
+            if tile.rect.collidepoint(position):
+                return tile.type in settings.FREE_TYLES
 
-    def is_hero_in_sight(self, enemy_position: Tuple[int, int], hero_position: Tuple[int, int]) -> bool:
-        return abs(hero_position[0] - enemy_position[0]) <= 400 and abs(hero_position[1] - enemy_position[1]) <= 400
+    @staticmethod
+    def is_hero_in_sight(enemy_position: typing.Tuple[int, int], hero_position: typing.Tuple[int, int]) -> bool:
+        """
+        Checks whether the hero is in the enemy's sight.
+        :param enemy_position: enemy position
+        :param hero_position: hero position
+        """
+        return abs(hero_position[0] - enemy_position[0]) <= 500 and abs(hero_position[1] - enemy_position[1]) <= 500
 
-    def find_path_step(self, start: Tuple[int, int], target: Tuple[int, int]) -> Tuple[int, int]:
-        step_size = 15
+    def hero_interaction(self):
+        for item in self.items:
+            if self.hero.rect.colliderect(item):
+                if item.type == 'weapon':
+                    inventory.change_weapon(item.give_self())
+                elif item.type == 'armor':
+                    inventory.change_armor(item.give_self(), item.armor_type)
+                self.hero.update_inventory(inventory)
+                item.kill()
+                break
+
+    def find_path_step(self, start: typing.Tuple[int, int], target: typing.Tuple[int, int]) -> typing.Tuple[int, int]:
+        """
+        Finds the way to the hero.
+        :param start: enemies position
+        :param target: targets position
+        """
+        step_size = 20
         if start[0] < target[0] and start[1] < target[1] and self.is_free((start[0] + step_size, start[1] + step_size)):
             return start[0] + step_size, start[1] + step_size
         elif start[0] == target[0] and start[1] < target[1] and self.is_free((start[0], start[1] + step_size)):
@@ -87,25 +152,50 @@ class Game:
             return start[0] - step_size, start[1] + step_size
         return start
 
-    def move_enemies(self) -> None:
-        if not self.is_paused:
-            for enemy in self.enemies:
-                if self.is_hero_in_sight(enemy.get_position(), self.hero.get_position()):
-                    next_position = self.find_path_step(enemy.get_position(), self.hero.get_position())
-                    enemy.set_position(next_position)
-                    enemy.is_running = True
-                else:
-                    enemy.is_running = False
+    def can_enemy_attack(self, enemy: pygame.sprite.Sprite) -> None:
+        """
+        Checks if the enemy can hit the hero.
+        :param enemy: enemy sprite
+        """
+        if enemy.rect.colliderect(self.hero.rect) and not self.hero.is_damaged and not self.hero.is_died:
+            enemy.set_mode_to_attack()
+            enemy.is_running = False
+        else:
+            enemy.is_running = True
 
-    def can_enemy_attack(self, obj) -> bool:
-        pass
+    def move_enemies(self) -> None:
+        """Moves enemies"""
+        try:
+            if not self.is_paused:
+                for enemy in self.enemies:
+                    if self.is_hero_in_sight(enemy.get_position(), self.hero.get_position()) and\
+                            not enemy.is_attacking and not enemy.is_damaged:
+                        next_position = self.find_path_step(enemy.get_position(), self.hero.get_position())
+                        enemy.set_position(next_position)
+                        self.can_enemy_attack(enemy)
+                    else:
+                        enemy.is_running = False
+                        enemy.is_standing = True
+        except Exception:
+            print("Unknown error.")
 
     def update_enemies(self) -> None:
         pass
 
-    def update(self) -> None:
+    def game_update(self) -> None:
+        """Games update"""
         if not self.is_paused:
-            self.hero.update_position()
-            camera.update(self.hero)
+            self.hero.update_position(self.tiles)
+            camera_obj.update(self.hero)
             for sprite in self.all_sprites:
-                camera.apply(sprite)
+                camera_obj.apply(sprite)
+            for hero in self.hero_sprite:
+                camera_obj.apply(hero)
+
+    def render(self, screen: pygame.Surface):
+        self.all_sprites.draw(screen)
+        self.hero_sprite.draw(screen)
+        self.game_update()
+        tools.draw_stats(screen, self.hero.health, self.hero.mana, self.hero.coins)
+        inventory.render(screen)
+

@@ -1,45 +1,68 @@
 import pygame
 import random
-
-from settings import *
-from typing import Tuple
+import settings
+import typing
+import inventory
 
 
 class Hero(pygame.sprite.Sprite):
-    right_standing_hero_images = HERO_IMAGES["right_standing"]
-    left_standing_hero_images = [pygame.transform.flip(i, True, False) for i in right_standing_hero_images]
-    right_attacking_hero_images = HERO_IMAGES["right_attacking"]
-    left_attacking_hero_images = [pygame.transform.flip(i, True, False) for i in right_attacking_hero_images]
-    right_walking_hero_images = HERO_IMAGES["right_walking"]
-    left_walking_hero_images = [pygame.transform.flip(i, True, False) for i in right_walking_hero_images]
+    right_standing_images = settings.HERO_IMAGES["right_standing"]
+    left_standing_images = [pygame.transform.flip(i, True, False) for i in right_standing_images]
+    right_attacking_images = settings.HERO_IMAGES["right_attacking"]
+    left_attacking_images = [pygame.transform.flip(i, True, False) for i in right_attacking_images]
+    right_walking_images = settings.HERO_IMAGES["right_walking"]
+    left_walking_images = [pygame.transform.flip(i, True, False) for i in right_walking_images]
+    right_damaged_images = settings.HERO_IMAGES["right_damaged"]
+    left_damaged_images = [pygame.transform.flip(i, True, False) for i in right_damaged_images]
+    right_died_images = settings.HERO_IMAGES["right_died"]
+    left_died_images = [pygame.transform.flip(i, True, False) for i in right_died_images]
 
-    def __init__(self, position: Tuple[int, int], *groups):
+    def __init__(self, position: typing.Tuple[int, int], inventory_obj: inventory.Inventory, *groups):
         super().__init__(*groups)
 
-        self.image = Hero.right_standing_hero_images[0]
+        self.image = Hero.right_standing_images[0]
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = position
 
-        pygame.time.set_timer(HERO_IMAGE_UPDATE_EVENT_TYPE, 200)  # timer for updating heros image
-        pygame.time.set_timer(HERO_STEP_SOUND_EVENT_TYPE, 500)  # timer for turning on the sound of footsteps
+        pygame.time.set_timer(settings.HERO_IMAGE_UPDATE_EVENT_TYPE, 200)  # timer for updating heros image
+        pygame.time.set_timer(settings.HERO_STEP_SOUND_EVENT_TYPE, 500)  # timer for turning on the sound of footsteps
 
-        self.name = "Hero"
-        self.inventory = 'inventory'
-        self.direction = 'right'
+        self.enemies_killed = 0
+
+        self.inventory = inventory_obj
+        self.damage = self.inventory.weapon.damage
         self.health = 100
+        self.defence = self.inventory.get_defence_value()
         self.mana = 100
+        self.coins = 0
+
+        self.direction = 'right'
         self.is_attacking = False
         self.is_walking = False
+        self.is_damaged = False
+        self.is_died = False
 
-    def get_position(self) -> Tuple[int, int]:
+    def get_position(self) -> typing.Tuple[int, int]:
         return self.rect.x, self.rect.y
 
-    def set_position(self, position: Tuple[int, int]):
+    def set_position(self, position: typing.Tuple[int, int]):
         self.rect.x, self.rect.y = position
+
+    @staticmethod
+    def play_attack_sound() -> None:
+        settings.HERO_SOUNDS[f"attack{random.randint(1, 2)}"].play()
+
+    def hit(self, target) -> None:
+        target.get_damage(self.damage, self)
+
+    def update_inventory(self, new_inventory: inventory.Inventory):
+        self.inventory = new_inventory
+        self.damage = self.inventory.weapon.damage
+        self.defence = self.inventory.get_defence_value()
 
     def standing_animation(self) -> None:
         """Updating the picture if the hero stands"""
-        img_by_dir = {'left': Hero.left_standing_hero_images, 'right': Hero.right_standing_hero_images}
+        img_by_dir = {'left': Hero.left_standing_images, 'right': Hero.right_standing_images}
         try:
             image_index = img_by_dir[self.direction].index(self.image)
             self.image = img_by_dir[self.direction][(image_index + 1) % 5]
@@ -49,7 +72,7 @@ class Hero(pygame.sprite.Sprite):
 
     def walking_animation(self) -> None:
         """Updating the picture if the hero walks"""
-        img_by_dir = {'left': Hero.left_walking_hero_images, 'right': Hero.right_walking_hero_images}
+        img_by_dir = {'left': Hero.left_walking_images, 'right': Hero.right_walking_images}
         try:
             image_index = img_by_dir[self.direction].index(self.image)
             self.image = img_by_dir[self.direction][(image_index + 1) % 6]
@@ -59,36 +82,61 @@ class Hero(pygame.sprite.Sprite):
 
     def attacking_animation(self) -> None:
         """Updating the picture if the hero attacks"""
-        img_by_dir = {'left': Hero.left_attacking_hero_images, 'right': Hero.right_attacking_hero_images}
+        img_by_dir = {'left': Hero.left_attacking_images, 'right': Hero.right_attacking_images}
         image_index = img_by_dir[self.direction].index(self.image)
         self.image = img_by_dir[self.direction][image_index + 1]
         if image_index + 1 == 5:
             self.is_attacking = False
 
-    def update_image(self) -> None:
-        """Updating the heros image"""
-        if not self.is_attacking:
-            if not self.is_walking:
-                self.standing_animation()
-            else:
-                self.walking_animation()
-            pygame.time.set_timer(HERO_IMAGE_UPDATE_EVENT_TYPE, 200)
+    def damaged_animation(self) -> None:
+        """Updating the picture if the hero takes damage"""
+        images = {'left': Hero.left_damaged_images, 'right': Hero.right_damaged_images}
+        try:
+            image_index = images[self.direction].index(self.image) + 1
+            self.image = images[self.direction][image_index]
+            if image_index == len(Hero.right_damaged_images) - 1:
+                self.is_damaged = False
+        except ValueError:
+            self.is_damaged = False
+
+    def died_animation(self):
+        """Updating the picture if the hero takes dies"""
+        images = {'left': Hero.left_died_images, 'right': Hero.right_died_images}
+        image_index = images[self.direction].index(self.image)
+        if image_index == len(Hero.right_died_images) - 1:
+            self.image = images[self.direction][-1]
         else:
-            self.attacking_animation()
+            self.image = images[self.direction][image_index + 1]
 
     def change_direction(self, direction: str) -> None:
         """Changing the direction if the hero and his image"""
         self.direction = direction
-        if self.direction == 'right' and self.image not in Hero.right_walking_hero_images:
-            self.image = Hero.right_walking_hero_images[0]
-        elif self.direction == 'left' and self.image not in Hero.left_walking_hero_images:
-            self.image = Hero.left_walking_hero_images[0]
+        if self.direction == 'right' and self.image not in Hero.right_walking_images:
+            self.image = Hero.right_walking_images[0]
+        elif self.direction == 'left' and self.image not in Hero.left_walking_images:
+            self.image = Hero.left_walking_images[0]
 
-    def update_position(self) -> None:
-        if not self.is_attacking:
-            position = self.get_position()
+    def get_damage(self, damage: int) -> None:
+        """
+        Taking damage
+        :param damage: damage value
+        """
+        if not self.is_died:
+            self.is_damaged = True
+            self.health -= damage * (1 - self.defence)
+            if self.health <= 0:
+                self.is_died = True
+                self.image = {'left': Hero.left_died_images,
+                              'right': Hero.right_died_images}.get(self.direction)[0]
+            else:
+                self.image = {'left': Hero.left_damaged_images,
+                              'right': Hero.right_damaged_images}.get(self.direction)[0]
+
+    def update_position(self, tiles: pygame.sprite.Group) -> None:
+        if not self.is_attacking and not self.is_damaged:
+            position = list(self.get_position())
             keys = pygame.key.get_pressed()
-            self.is_walking = any(keys)
+            self.is_walking = keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]
 
             if keys[pygame.K_a]:
                 self.change_direction('left')
@@ -96,39 +144,67 @@ class Hero(pygame.sprite.Sprite):
                 self.change_direction('right')
 
             if keys[pygame.K_w] and keys[pygame.K_d]:
-                self.set_position((position[0] + HERO_MOVE_SPEED, position[1] - HERO_MOVE_SPEED))
+                position[0] += settings.HERO_MOVE_SPEED
+                position[1] -= settings.HERO_MOVE_SPEED
             elif keys[pygame.K_w] and keys[pygame.K_a]:
-                self.set_position((position[0] - HERO_MOVE_SPEED, position[1] - HERO_MOVE_SPEED))
+                position[0] -= settings.HERO_MOVE_SPEED
+                position[1] -= settings.HERO_MOVE_SPEED
             elif keys[pygame.K_s] and keys[pygame.K_d]:
-                self.set_position((position[0] + HERO_MOVE_SPEED, position[1] + HERO_MOVE_SPEED))
+                position[0] += settings.HERO_MOVE_SPEED
+                position[1] += settings.HERO_MOVE_SPEED
             elif keys[pygame.K_s] and keys[pygame.K_a]:
-                self.set_position((position[0] - HERO_MOVE_SPEED, position[1] + HERO_MOVE_SPEED))
+                position[0] -= settings.HERO_MOVE_SPEED
+                position[1] += settings.HERO_MOVE_SPEED
             elif keys[pygame.K_d]:
-                self.set_position((position[0] + HERO_MOVE_SPEED, position[1]))
+                position[0] += settings.HERO_MOVE_SPEED
             elif keys[pygame.K_a]:
-                self.set_position((position[0] - HERO_MOVE_SPEED, position[1]))
+                position[0] -= settings.HERO_MOVE_SPEED
             elif keys[pygame.K_w]:
-                self.set_position((position[0], position[1] - HERO_MOVE_SPEED))
+                position[1] -= settings.HERO_MOVE_SPEED
             elif keys[pygame.K_s]:
-                self.set_position((position[0], position[1] + HERO_MOVE_SPEED))
+                position[1] += settings.HERO_MOVE_SPEED
+
+            position = position[0], position[1]
+            # creating rect repeating heros rect (needed for accurate tuning)
+            rect_model = pygame.Rect((position[0] + 100 * (-1 if keys[pygame.K_a] else 1),
+                                      position[1] + 130 * (-1 if keys[pygame.K_w] else 1),
+                                      150, 150))
+            for tile in tiles:
+                if tile.rect.colliderect(rect_model):
+                    if tile.type in settings.FREE_TYLES:
+                        self.set_position(position)
+                        break
 
     def attack(self) -> None:
         """Switches hero mode to attack"""
         self.is_attacking = True
         self.play_attack_sound()
         if self.direction == 'right':
-            self.image = Hero.right_attacking_hero_images[0]
+            self.image = Hero.right_attacking_images[0]
         elif self.direction == 'left':
-            self.image = Hero.left_attacking_hero_images[0]
-        pygame.time.set_timer(HERO_IMAGE_UPDATE_EVENT_TYPE, 80)
+            self.image = Hero.left_attacking_images[0]
+        pygame.time.set_timer(settings.HERO_IMAGE_UPDATE_EVENT_TYPE, 80)
 
-    @staticmethod
-    def play_attack_sound() -> None:
-        HERO_SOUNDS[f"attack{random.randint(1, 2)}"].play()
+    def update_image(self) -> None:
+        """Updating the heros image"""
+        if not self.is_died:
+            if not self.is_damaged:
+                if not self.is_attacking:
+                    if not self.is_walking:
+                        self.standing_animation()
+                    else:
+                        self.walking_animation()
+                    pygame.time.set_timer(settings.HERO_IMAGE_UPDATE_EVENT_TYPE, 200)
+                else:
+                    self.attacking_animation()
+            else:
+                self.damaged_animation()
+        else:
+            self.died_animation()
 
 
 class Alchemist(pygame.sprite.Sprite):
-    images = ALCHEMIST_IMAGES['right']
+    images = settings.ALCHEMIST_IMAGES['right']
 
     def __init__(self, position: tuple, *groups):
         super().__init__(*groups)
@@ -137,7 +213,7 @@ class Alchemist(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = position
 
-        pygame.time.set_timer(ALCHEMIST_EVENT_TYPE, 700)
+        pygame.time.set_timer(settings.ALCHEMIST_EVENT_TYPE, 700)
 
         self.name = 'Alchemist'
         self.skills = 'High'
@@ -146,53 +222,138 @@ class Alchemist(pygame.sprite.Sprite):
         self.image = Alchemist.images[Alchemist.images.index(self.image) - 1]
 
 
-class ElectroEnemy(pygame.sprite.Sprite):
-    images_standing_right = ELECTRO_ENEMY_IMAGES["right_standing"]
-    images_standing_left =[pygame.transform.flip(i, True, False) for i in images_standing_right]
-    images_running_right = ELECTRO_ENEMY_IMAGES["right_running"]
-    images_running_left = [pygame.transform.flip(i, True, False) for i in images_running_right]
-
-    def __init__(self, position: Tuple[int, int], *groups):
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, position: typing.Tuple[int, int], target: Hero, *groups):
         super().__init__(*groups)
 
-        self.image = ElectroEnemy.images_standing_right[0]
+        self.image = self.images_standing_right[0]
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = position
         self.direction = 'left'
         self.is_running = False
+        self.is_attacking = False
+        self.is_damaged = False
+        self.is_died = False
 
-        pygame.time.set_timer(ELECTRO_ENEMY_EVENT_TYPE, 120)
-        pygame.time.set_timer(ELECTRO_ENEMY_MOVE_EVENT_TYPE, 100)
+        self.target = target
+        self.coins = random.randint(15, 20)
 
-    def get_position(self) -> Tuple[int, int]:
+        pygame.time.set_timer(settings.ELECTRO_ENEMY_EVENT_TYPE, 120)
+        pygame.time.set_timer(settings.ELECTRO_ENEMY_MOVE_EVENT_TYPE, 100)
+
+    def get_position(self) -> typing.Tuple[int, int]:
         return self.rect.x, self.rect.y
 
-    def set_position(self, position: Tuple[int, int]) -> None:
+    def set_position(self, position: typing.Tuple[int, int]) -> None:
         self.direction = 'left' if self.rect.x > position[0] else 'right'
         self.rect.x, self.rect.y = position
 
+    @staticmethod
+    def play_attack_sound() -> None:
+        settings.ENEMY_SOUNDS["attack1"].play()
+
+    def hit(self, hero: Hero) -> None:
+        hero.get_damage(self.damage)
+
+    def get_damage(self, damage: int, hero: Hero) -> None:
+        if not self.is_died:
+            self.is_damaged = True
+            self.health -= damage
+            self.image = {'left': self.images_damaged_left,
+                          'right': self.images_damaged_right}.get(self.direction)[0]
+            if self.health <= 0:
+                self.is_died = True
+                hero.enemies_killed += 1
+                hero.coins += self.coins
+
     def standing_animation(self) -> None:
-        images = {'left': ElectroEnemy.images_standing_left, 'right': ElectroEnemy.images_standing_right}
+        images = {'left': self.images_standing_left, 'right': self.images_standing_right}
         try:
-            image_index = (images[self.direction].index(self.image) + 1) % 8
+            image_index = (images[self.direction].index(self.image) + 1) % len(images['left'])
             self.image = images[self.direction][image_index]
         except ValueError:
             # if current image not in the list with enemy standing images
             self.image = images[self.direction][0]
 
     def running_animation(self) -> None:
-        images = {'left': ElectroEnemy.images_running_left, 'right': ElectroEnemy.images_running_right}
+        images = {'left': self.images_running_left, 'right': self.images_running_right}
         try:
-            image_index = (images[self.direction].index(self.image) + 1) % 6
+            image_index = (images[self.direction].index(self.image) + 1) % len(images['left'])
             self.image = images[self.direction][image_index]
         except ValueError:
             self.image = images[self.direction][0]
 
     def attacking_animation(self) -> None:
-        pass
+        images = {'left': self.images_attacking_left, 'right': self.images_attacking_right}
+        image_index = 0
+        try:
+            image_index = images[self.direction].index(self.image)
+            self.image = images[self.direction][image_index + 1]
+        except ValueError:
+            self.image = images[self.direction][0]
+        if image_index == 8:
+            self.is_attacking = False
+            self.play_attack_sound()
+            if self.rect.colliderect(self.target.rect):
+                self.hit(self.target)
+
+    def damaged_animation(self) -> None:
+        images = {'left': self.images_damaged_left, 'right': self.images_damaged_right}
+        image_index = images[self.direction].index(self.image) + 1
+        self.image = images[self.direction][image_index]
+        if image_index == len(self.images_damaged_left) - 1:
+            self.is_damaged = False
+
+    def die_animation(self) -> None:
+        images = {'left': self.images_died_left, 'right': self.images_died_left}
+        try:
+            image_index = images[self.direction].index(self.image) + 1
+            self.image = images[self.direction][image_index]
+            if image_index == len(self.images_died_left) - 1:
+                self.kill()
+        except ValueError:
+            self.image = images[self.direction][0]
+
+    def set_mode_to_attack(self) -> None:
+        """Switches hero mode to attack"""
+        self.is_attacking = True
+        if self.direction == 'right':
+            self.image = ElectroEnemy.images_attacking_right[0]
+        elif self.direction == 'left':
+            self.image = ElectroEnemy.images_attacking_left[0]
 
     def update_image(self) -> None:
-        if self.is_running:
-            self.running_animation()
+        if not self.is_died:
+            if not self.is_damaged:
+                if not self.is_attacking and not self.is_damaged:
+                    if not self.is_running:
+                        self.standing_animation()
+                    else:
+                        self.running_animation()
+                    pygame.time.set_timer(settings.ELECTRO_ENEMY_EVENT_TYPE, 120)
+                else:
+                    self.attacking_animation()
+                    pygame.time.set_timer(settings.ELECTRO_ENEMY_EVENT_TYPE, 75)
+            else:
+                self.damaged_animation()
         else:
-            self.standing_animation()
+            self.die_animation()
+
+
+class ElectroEnemy(Enemy):
+    images_standing_right = settings.ELECTRO_ENEMY_IMAGES["right_standing"]
+    images_standing_left = [pygame.transform.flip(i, True, False) for i in images_standing_right]
+    images_running_right = settings.ELECTRO_ENEMY_IMAGES["right_running"]
+    images_running_left = [pygame.transform.flip(i, True, False) for i in images_running_right]
+    images_attacking_right = settings.ELECTRO_ENEMY_IMAGES["right_attacking"]
+    images_attacking_left = [pygame.transform.flip(i, True, False) for i in images_attacking_right]
+    images_damaged_right = settings.ELECTRO_ENEMY_IMAGES["right_damaged"]
+    images_damaged_left = [pygame.transform.flip(i, True, False) for i in images_damaged_right]
+    images_died_right = settings.ELECTRO_ENEMY_IMAGES["right_die"]
+    images_died_left = [pygame.transform.flip(i, True, False) for i in images_died_right]
+
+    def __init__(self, position: typing.Tuple[int, int], target: Hero, *groups):
+        super().__init__(position, target, *groups)
+
+        self.damage = 30
+        self.health = 50
